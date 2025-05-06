@@ -1,0 +1,7 @@
+CREATE TABLE users (
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    name VARCHAR(220) NOT NULL,
+    email VARCHAR(220) NOT NULL,
+    password VARCHAR(220) NOT NULL,
+    pickMode ENUM("PASSANGER","DRIVER")
+);
