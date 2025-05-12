@@ -45,9 +45,18 @@ public class Login {
             String password = new String(passText.getPassword());
 
             if (authenticateUser(email, password)) {
-                frame.dispose(); // Κλείσε το login παράθυρο
-                new HomePage();  // Άνοιξε την κεντρική σελίδα
-            } else {
+                frame.dispose(); // Κλείσιμο του login παραθύρου
+                if (Session.pickMode.equals("DRIVER")) {
+                    DriverHome driverHome = new DriverHome();
+                    driverHome.setVisible(true);
+                } else {
+                    PassengerHome passengerHome = new PassengerHome();
+                    passengerHome.setVisible(true);
+                }
+            }
+
+
+            else {
                 JOptionPane.showMessageDialog(panel, "Λανθασμένα στοιχεία.");
             }
         });
