@@ -11,12 +11,16 @@ import java.awt.event.ActionListener;
 import java.sql.*;
 
 public class HomePage extends JFrame {
-    private JMapViewer map;
-    private boolean iconToggled = false;
-    private JButton iconButton;
-    private ImageIcon carIcon;
-    private ImageIcon maleIcon;
-    private String pickMode = "DRIVER"; // Αρχική τιμή για το PickMode
+    protected JMapViewer map;
+    protected boolean iconToggled = false;
+    protected JButton iconButton;
+    protected ImageIcon carIcon;
+    protected ImageIcon maleIcon;
+    protected String pickMode = "DRIVER";
+
+    // ✅ Δηλώνουμε ως protected για να τα βλέπει η PassengerHome
+    protected JTextField addressField;
+    protected JButton searchButton;
 
     public HomePage() {
         setTitle("PickMeApp Home Page");
@@ -24,19 +28,16 @@ public class HomePage extends JFrame {
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setLocationRelativeTo(null);
         setLayout(new BorderLayout());
-        // Φόρτωσε το pickMode από τη βάση
+
         pickMode = fetchPickModeFromDB();
         iconToggled = pickMode.equalsIgnoreCase("PASSENGER");
 
-
-        // Φορτώνει εικόνες από resources/icons
         carIcon = new ImageIcon(getClass().getResource("icons/car.png"));
         maleIcon = new ImageIcon(getClass().getResource("icons/male.png"));
-        
-        
+
         Image scaledCar = carIcon.getImage().getScaledInstance(24, 24, Image.SCALE_SMOOTH);
         Image scaledMale = maleIcon.getImage().getScaledInstance(24, 24, Image.SCALE_SMOOTH);
-        
+
         carIcon = new ImageIcon(scaledCar);
         maleIcon = new ImageIcon(scaledMale);
         iconButton = new JButton(iconToggled ? maleIcon : carIcon);
@@ -44,15 +45,26 @@ public class HomePage extends JFrame {
         map = new JMapViewer();
         add(map, BorderLayout.CENTER);
 
-        // Search Panel (bottom)
-        JPanel searchPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
-        JTextField addressField = new JTextField(30);
-        JButton searchButton = new JButton("Search");
+        // Bottom Search Panel
+                JPanel searchPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
+        
+        JLabel pickupLabel = new JLabel("Διεύθυνση Επιβίβασης: ");
+        JTextField pickupField = new JTextField(20);
 
-        searchPanel.add(new JLabel("Διεύθυνση: "));
+        JLabel addressLabel = new JLabel(" ");
+        addressField = new JTextField(20); // Γίνεται πεδίο της κλάσης
+
+        searchButton = new JButton("Search");
+
+        searchPanel.add(pickupLabel);
+        searchPanel.add(pickupField);
+        searchPanel.add(addressLabel);
         searchPanel.add(addressField);
         searchPanel.add(searchButton);
+
         add(searchPanel, BorderLayout.SOUTH);
+
+
 
         // Icon Button (top right) με εικόνες
         JPanel topRightPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
@@ -143,7 +155,7 @@ public class HomePage extends JFrame {
         JOptionPane.showMessageDialog(null, "Σφάλμα κατά τη φόρτωση pickMode: " + e.getMessage());
     }
 
-    return "DRIVER"; // Προεπιλογή σε περίπτωση λάθους
+    return "DRIVER"; // Προεπιλογή σε περίπτσωση λάθους
 }
 
 
