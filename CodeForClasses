@@ -22,6 +22,7 @@ public class User {
     public void updateProfile() {}
     public void rateUser(User user, float rating, String comment) {}
     public User(String name, String email){}
+    public void addRideHistory(){}
 }
 // Driver class
 public class Driver extends User {
@@ -154,9 +155,13 @@ public class Notification {
     private LocalDateTime sendTime;
     private List<User> user; //Association
 
-    public void send() {}
     public void markAsRead() {}
     public void delete() {}
+    public void getNotifications(){}
+    public void getSource(){}
+    public void redirectToSource(){}
+    public void showDetails(){}
+    public void openNot(){}
 }
 
 // RideHistory class
