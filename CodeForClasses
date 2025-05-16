@@ -7,10 +7,13 @@ public class User {
     private String profilePicture;
     private List<Report> report; //Association
     private List<Messages> messages; //Association
-    private List<Notification> notification; //Aggregation
-    private List<Review> review; //Aggregation
+    private List<Notification> notification; //Association
+    private List<Review> review; //Association
     private List<Payment> payment; //Association
     private List<Login> login; //Composition
+    private List<RideHistory> rideHistory; //Association
+    private List<Authentication> authentication; //Composition
+    private List<UserPreferences> userPreferences; //Aggregation
 
     public void register() {}
     public boolean login() {return true;}
@@ -25,6 +28,9 @@ public class Driver extends User {
     private String licenseNumber;
     private Date lisenceExpireDate;
     private Vehicle vehicle;
+    private List<Route> route; //Association
+    private List<Vehicle> vehicle; //Composition
+    private List<Route> route; //Composition
 
     public Route createRoute(Location start, Location end, LocalDateTime departureTime) {return new Route();}
     public void acceptRequest(RideRequest request) {}
@@ -34,6 +40,9 @@ public class Driver extends User {
 
 // Passenger class
 public class Passenger extends User {
+    private List<Route> route; //Association
+    private List<RideHistory> rideHistory; //Composition
+
     public List<Route> searchRoutes(Location start, Location end) {return new ArrayList<>(); }
     public RideRequest sendRideRequest(Route route) {return new RideRequest();}
     public void cancelRequest(RideRequest request) {}
@@ -72,6 +81,12 @@ public class Route {
     private float passengerCost;
     private List<Passenger> passengers;
     private Driver driver;
+    private List<Payment> payment;
+    private List<RideRequest> rideRequest; //Association
+    private List<Passenger> passenger; //Association
+    private List<Location> location; //Aggregation
+
+
 
     public void addPassenger(Passenger passenger) {}
     public void removePassenger(Passenger passenger) {}
@@ -88,6 +103,8 @@ public class RideRequest {
     private String status;
     private LocalDateTime requestTime;
     private LocalDateTime approvedTime;
+    private List<Route> route; //Association
+    private List<Messages> messages; //Association
 
     public void accept() {}
     public void reject() {}
@@ -103,6 +120,7 @@ public class Review {
     private float rating;
     private String comment;
     private LocalDateTime createdAt;
+    private List<User> user; //Association
 
     public void submit() {}
     public void edit(float newRating, String newComment) {}
@@ -119,6 +137,7 @@ public class Report {
     private String status;
     private LocalDateTime createdTime;
     private LocalDateTime resolvedTime;
+    private List<User> user; //Association
 
     public void submit() {}
     public void review() {}
@@ -131,6 +150,7 @@ public class Notification {
     private String message;
     private String type;
     private LocalDateTime sendTime;
+    private List<User> user; //Association
 
     public void send() {}
     public void markAsRead() {}
@@ -144,6 +164,7 @@ public class RideHistory {
     private Route route;
     private String role;
     private LocalDateTime completedTime;
+    private List<User> user; //Association
 
     public List<Route> getRideHistoryForUser(User user) {return new ArrayList<>();}
     public void addCompletedRide(Route route) {}
@@ -179,6 +200,7 @@ public class Messages {
     private User sender;
     private User receiver;
     private LocalDateTime timestamp;
+    private List<User> user; //Association
 
     public void send() {}
     public void delete() {}
@@ -221,6 +243,8 @@ public class Payment {
     private float amount;
     private String status;
     private LocalDateTime paidAt;
+    private List<Route> route; //Association
+    private List<User> user; //Association
 
     public boolean process() { return true; }
     public void cancel() {}
