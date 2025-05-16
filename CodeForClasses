@@ -257,3 +257,10 @@ public class Payment {
     public boolean refund() { return true; }
     public String getReceipt() { return "Receipt"; }
 }
+
+// Search class
+public class Search{
+
+    public void getRoute() {}
+    public void getAvailableDrivers() {}
+}
