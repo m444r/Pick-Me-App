@@ -110,6 +110,8 @@ public class RideRequest {
     public void reject() {}
     public void cancel() {}
     public String getStatus() {return status;
+    public String getUserInput() {}
+    public void saveRide() {}
 }
 
 // Review class
@@ -202,9 +204,13 @@ public class Messages {
     private LocalDateTime timestamp;
     private List<User> user; //Association
 
-    public void send() {}
-    public void delete() {}
-    public void edit() {}
+    public void sendMessage() {}
+    public void deleteChat() {}
+    public void editMessage() {}
+    public void showKeyboard() {}
+    public void loadProfiles() {}
+    public void showUsersProfile() {}
+    public void menu() {}
 }
 
 // Location class
