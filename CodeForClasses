@@ -1,121 +1,322 @@
-// User class
-public class User {
+/**
+ * Base class for all users in the system
+ */
+public class User implements Ratable {
     private String name;
     private String email;
     private float rating;
     private boolean isVerified;
     private String profilePicture;
-    private List<Report> report; //Association
-    private List<Messages> messages; //Association
-    private List<Notification> notification; //Association
-    private List<Review> review; //Association
-    private List<Payment> payment; //Association
-    private List<Login> login; //Composition
-    private List<RideHistory> rideHistory; //Association
-    private List<Authentication> authentication; //Composition
-    private List<UserPreferences> userPreferences; //Aggregation
+    private List<Report> reports;
+    private List<Message> messages;
+    private List<Notification> notifications;
+    private List<Review> reviews;
+    private List<Payment> payments;
+    private List<Login> logins;
+    private List<RideHistory> rideHistories;
+    private List<Authentication> authentications;
+    private List<UserPreferences> preferences;
 
-    public void register() {}
-    public boolean login() {return true;}
-    public void logout() {}
-    public boolean verifyUser(Authentication authentication) {return true;}
-    public void updateProfile() {}
-    public void rateUser(User user, float rating, String comment) {}
-    public User(String name, String email){}
-    public void addRideHistory(){}
+    public User(String name, String email) {
+        this.name = name;
+        this.email = email;
+        this.logins = new ArrayList<>();
+        this.authentications = new ArrayList<>();
+        this.preferences = new ArrayList<>();
+    }
+
+    public void register() throws RegistrationException {
+        // Implementation
+    }
+
+    public boolean login() throws AuthenticationException {
+        // Implementation
+        return true;
+    }
+
+    public void logout() {
+        // Implementation
+    }
+
+    public boolean verifyUser(Authentication authentication) throws AuthenticationException {
+        // Implementation
+        return true;
+    }
+
+    public void updateProfile() throws ProfileUpdateException {
+        // Implementation
+    }
+
+    @Override
+    public void rate(User user, float rating, String comment) throws RatingException {
+        if (rating < 0 || rating > 5) {
+            throw new RatingException("Rating must be between 0 and 5");
+        }
+        // Implementation
+    }
+
+    public void addRideHistory(RideHistory history) {
+        this.rideHistories.add(history);
+    }
 }
-// Driver class
+
+/**
+ * Represents a driver in the system
+ */
 public class Driver extends User {
     private String licenseNumber;
-    private Date lisenceExpireDate;
-    private Vehicle vehicle;
-    private List<Route> route; //Association
-    private List<Vehicle> vehicle; //Composition
-    private List<Route> route; //Composition
+    private Date licenseExpireDate;
+    private List<Vehicle> vehicles;
+    private List<Route> routes;
 
-    public Route createRoute(Location start, Location end, LocalDateTime departureTime) {return new Route();}
-    public void acceptRequest(RideRequest request) {}
-    public void rejectRequest(RideRequest request) {}
-    public void ratePassenger(Passenger passenger, float rating, String comment) {}
+    public Driver(String name, String email, String licenseNumber) {
+        super(name, email);
+        this.licenseNumber = licenseNumber;
+        this.vehicles = new ArrayList<>();
+        this.routes = new ArrayList<>();
+    }
+
+    public Route createRoute(Location start, Location end, LocalDateTime departureTime) throws RouteCreationException {
+        if (departureTime.isBefore(LocalDateTime.now())) {
+            throw new RouteCreationException("Departure time cannot be in the past");
+        }
+        Route route = new Route.RouteBuilder()
+            .setStart(start)
+            .setEnd(end)
+            .setDepartureTime(departureTime)
+            .setDriver(this)
+            .build();
+        routes.add(route);
+        return route;
+    }
+
+    public void acceptRequest(RideRequest request) throws RequestProcessingException {
+        request.accept();
+    }
+
+    public void rejectRequest(RideRequest request) throws RequestProcessingException {
+        request.reject();
+    }
+
+    public void ratePassenger(Passenger passenger, float rating, String comment) throws RatingException {
+        super.rate(passenger, rating, comment);
+    }
 }
 
-// Passenger class
+/**
+ * Represents a passenger in the system
+ */
 public class Passenger extends User {
-    private List<Route> route; //Association
-    private List<RideHistory> rideHistory; //Composition
+    private List<Route> routes;
+    private List<RideHistory> rideHistories;
 
-    public List<Route> searchRoutes(Location start, Location end) {return new ArrayList<>(); }
-    public RideRequest sendRideRequest(Route route) {return new RideRequest();}
-    public void cancelRequest(RideRequest request) {}
-    public void rateDriver(Driver driver, float rating, String comment) {}
+    public Passenger(String name, String email) {
+        super(name, email);
+        this.routes = new ArrayList<>();
+        this.rideHistories = new ArrayList<>();
+    }
+
+    public List<Route> searchRoutes(Location start, Location end) throws SearchException {
+        if (start == null || end == null) {
+            throw new SearchException("Start and end locations must be specified");
+        }
+        // Implementation
+        return new ArrayList<>();
+    }
+
+    public RideRequest sendRideRequest(Route route) throws RequestCreationException {
+        if (!route.isSeatAvailable()) {
+            throw new RequestCreationException("No seats available on this route");
+        }
+        return new RideRequest(this, route);
+    }
+
+    public void cancelRequest(RideRequest request) throws RequestProcessingException {
+        request.cancel();
+    }
+
+    public void rateDriver(Driver driver, float rating, String comment) throws RatingException {
+        super.rate(driver, rating, comment);
+    }
 }
-
-// Vehicle class
+/**
+ * Represents a vehicle in the system
+ */
 public class Vehicle {
-    private string vehicleId;
+    private String vehicleId;
     private Driver owner;
-    private string model;
-    private string brand;
-    private string color;
+    private String model;
+    private String brand;
+    private String color;
     private int manufactureYear;
-    private string licensePlate;
-    private string fuelType;
+    private String licensePlate;
+    private String fuelType;
     private int totalSeats;
     private int availableSeats;
     private boolean insurance;
-    private boolean AC;
+    private boolean hasAC;
     private boolean isSmokingAllowed;
 
-    public void updateAvailability(int seats) {}
-    public boolean isAvailable() {return availableSeats > 0;}
-    public void assignToDriver(Driver driver) {this.owner = driver;}
+    private Vehicle(VehicleBuilder builder) {
+        this.vehicleId = builder.vehicleId;
+        this.model = builder.model;
+        this.brand = builder.brand;
+        this.color = builder.color;
+        this.totalSeats = builder.totalSeats;
+        this.availableSeats = builder.totalSeats;
+    }
+
+    public void updateAvailability(int seats) throws IllegalArgumentException {
+        if (seats > totalSeats) {
+            throw new IllegalArgumentException("Available seats cannot exceed total seats");
+        }
+        this.availableSeats = seats;
+    }
+
+    public boolean isAvailable() {
+        return availableSeats > 0;
+    }
+
+    public void assignToDriver(Driver driver) {
+        this.owner = driver;
+    }
+
+    public static class VehicleBuilder {
+        private String vehicleId;
+        private String model;
+        private String brand;
+        private String color;
+        private int totalSeats;
+
+        public VehicleBuilder setVehicleId(String vehicleId) {
+            this.vehicleId = vehicleId;
+            return this;
+        }
+
+        // Add other setter methods
+
+        public Vehicle build() {
+            return new Vehicle(this);
+        }
+    }
 }
 
-// Route class
+/**
+ * Represents a route in the system
+ */
 public class Route {
-    private string startLocation;
-    private string endLocation;
+    private String routeId;
+    private Location startLocation;
+    private Location endLocation;
     private LocalDateTime departureTime;
     private LocalDateTime estimatedArrival;
-    private string routeId;
     private boolean isActive;
     private float passengerCost;
     private List<Passenger> passengers;
     private Driver driver;
-    private List<Payment> payment;
-    private List<RideRequest> rideRequest; //Association
-    private List<Passenger> passenger; //Association
-    private List<Location> location; //Aggregation
+    private List<Payment> payments;
+    private List<RideRequest> rideRequests;
+    private List<Location> stops;
 
+    private Route(RouteBuilder builder) {
+        this.routeId = UUID.randomUUID().toString();
+        this.startLocation = builder.startLocation;
+        this.endLocation = builder.endLocation;
+        this.departureTime = builder.departureTime;
+        this.driver = builder.driver;
+        this.passengers = new ArrayList<>();
+        this.payments = new ArrayList<>();
+        this.rideRequests = new ArrayList<>();
+        this.stops = new ArrayList<>();
+    }
 
+    public void addPassenger(Passenger passenger) throws RouteException {
+        if (!isSeatAvailable()) {
+            throw new RouteException("No seats available");
+        }
+        passengers.add(passenger);
+    }
 
-    public void addPassenger(Passenger passenger) {}
-    public void removePassenger(Passenger passenger) {}
-    public boolean isSeatAvailable() {return true;}
-    public LocalDateTime calculateETA() {return LocalDateTime.now();}
-    public int getTotalPassengers() {return passengers.size();}
+    public void removePassenger(Passenger passenger) {
+        passengers.remove(passenger);
+    }
+
+    public boolean isSeatAvailable() {
+        return driver.getVehicle().isAvailable();
+    }
+
+    public LocalDateTime calculateETA() {
+        // Implementation
+        return estimatedArrival;
+    }
+
+    public int getTotalPassengers() {
+        return passengers.size();
+    }
+
+    public static class RouteBuilder {
+        private Location startLocation;
+        private Location endLocation;
+        private LocalDateTime departureTime;
+        private Driver driver;
+
+        public RouteBuilder setStart(Location start) {
+            this.startLocation = start;
+            return this;
+        }
+
+        // Add other setter methods
+
+        public Route build() {
+            return new Route(this);
+        }
+    }
 }
-
-// RideRequest class
+/**
+ * Represents a ride request in the system
+ */
 public class RideRequest {
     private String requestId;
     private Passenger passenger;
     private Route route;
-    private String status;
+    private RequestStatus status;
     private LocalDateTime requestTime;
     private LocalDateTime approvedTime;
-    private List<Route> route; //Association
-    private List<Messages> messages; //Association
+    private List<Message> messages;
 
-    public void accept() {}
-    public void reject() {}
-    public void cancel() {}
-    public String getStatus() {return status;
-    public String getUserInput() {}
-    public void saveRide() {}
+    public RideRequest(Passenger passenger, Route route) {
+        this.requestId = UUID.randomUUID().toString();
+        this.passenger = passenger;
+        this.route = route;
+        this.requestTime = LocalDateTime.now();
+        this.status = RequestStatus.PENDING;
+    }
+
+    public void accept() throws RequestProcessingException {
+        if (status != RequestStatus.PENDING) {
+            throw new RequestProcessingException("Request cannot be accepted");
+        }
+        status = RequestStatus.ACCEPTED;
+        approvedTime = LocalDateTime.now();
+        route.addPassenger(passenger);
+    }
+
+    public void reject() {
+        status = RequestStatus.REJECTED;
+    }
+
+    public void cancel() {
+        status = RequestStatus.CANCELLED;
+    }
+
+    public RequestStatus getStatus() {
+        return status;
+    }
 }
 
-// Review class
+/**
+ * Represents a review in the system
+ */
 public class Review {
     private String reviewId;
     private User reviewer;
@@ -123,62 +324,141 @@ public class Review {
     private float rating;
     private String comment;
     private LocalDateTime createdAt;
-    private List<User> user; //Association
 
-    public void submit() {}
-    public void edit(float newRating, String newComment) {}
-    public void delete() {}
+    public Review(User reviewer, User reviewee, float rating, String comment) {
+        this.reviewId = UUID.randomUUID().toString();
+        this.reviewer = reviewer;
+        this.reviewee = reviewee;
+        this.rating = rating;
+        this.comment = comment;
+        this.createdAt = LocalDateTime.now();
+    }
+
+    public void submit() throws ReviewException {
+        // Implementation
+    }
+
+    public void edit(float newRating, String newComment) throws ReviewException {
+        // Implementation
+    }
+
+    public void delete() throws ReviewException {
+        // Implementation
+    }
 }
-
-// Report class
+/**
+ * Represents a report in the system
+ */
 public class Report {
     private String reportId;
     private User reporter;
     private User reportedUser;
     private String reason;
     private String description;
-    private String status;
+    private ReportStatus status;
     private LocalDateTime createdTime;
     private LocalDateTime resolvedTime;
-    private List<User> user; //Association
 
-    public void submit() {}
-    public void review() {}
-    public void close() {}
+    public Report(User reporter, User reportedUser, String reason, String description) {
+        this.reportId = UUID.randomUUID().toString();
+        this.reporter = reporter;
+        this.reportedUser = reportedUser;
+        this.reason = reason;
+        this.description = description;
+        this.status = ReportStatus.PENDING;
+        this.createdTime = LocalDateTime.now();
+    }
+
+    public void submit() throws ReportException {
+        // Implementation
+    }
+
+    public void review() throws ReportException {
+        // Implementation
+    }
+
+    public void close() throws ReportException {
+        // Implementation
+    }
 }
 
-// Notification class
+/**
+ * Represents a notification in the system
+ */
 public class Notification {
+    private String notificationId;
     private User recipient;
     private String message;
-    private String type;
+    private NotificationType type;
     private LocalDateTime sendTime;
-    private List<User> user; //Association
+    private boolean isRead;
 
-    public void markAsRead() {}
-    public void delete() {}
-    public void getNotifications(){}
-    public void getSource(){}
-    public void redirectToSource(){}
-    public void showDetails(){}
-    public void openNot(){}
+    public Notification(User recipient, String message, NotificationType type) {
+        this.notificationId = UUID.randomUUID().toString();
+        this.recipient = recipient;
+        this.message = message;
+        this.type = type;
+        this.sendTime = LocalDateTime.now();
+        this.isRead = false;
+    }
+
+    public void markAsRead() {
+        this.isRead = true;
+    }
+
+    public void delete() {
+        // Implementation
+    }
 }
 
-// RideHistory class
+/**
+ * Represents the ride history of a user
+ */
 public class RideHistory {
     private String historyId;
     private User user;
     private Route route;
-    private String role;
+    private UserRole role;
     private LocalDateTime completedTime;
-    private List<User> user; //Association
+    private LocalDateTime createdAt;
 
-    public List<Route> getRideHistoryForUser(User user) {return new ArrayList<>();}
-    public void addCompletedRide(Route route) {}
-    public void clearHistory() {}
+    public RideHistory(User user, Route route, UserRole role) {
+        this.historyId = UUID.randomUUID().toString();
+        this.user = user;
+        this.route = route;
+        this.role = role;
+        this.createdAt = LocalDateTime.now();
+    }
+
+    public List<Route> getRideHistoryForUser(User user) throws HistoryException {
+        if (user == null) {
+            throw new HistoryException("User cannot be null");
+        }
+        // Implementation
+        return new ArrayList<>();
+    }
+
+    public void addCompletedRide(Route route) throws HistoryException {
+        if (route == null) {
+            throw new HistoryException("Route cannot be null");
+        }
+        this.route = route;
+        this.completedTime = LocalDateTime.now();
+    }
+
+    public void clearHistory() throws HistoryException {
+        // Implementation with proper cleanup
+    }
+
+    public enum UserRole {
+        DRIVER,
+        PASSENGER
+    }
 }
 
-// Authentication class
+/**
+ * Handles user authentication in the system
+ */
 public class Authentication {
     private String authId;
     private User user;
@@ -186,86 +466,363 @@ public class Authentication {
     private int failedAttempts;
     private boolean isLocked;
     private boolean twoFactorEnabled;
+    private static final int MAX_FAILED_ATTEMPTS = 3;
 
-    public boolean authenticate(String email, String password) {return true;}
-    public void enable2FA() {}
-    public void disable2FA() {}
-    public void lockAccount() {}
-    public void unlockAccount() {}
+    public Authentication(User user) {
+        this.authId = UUID.randomUUID().toString();
+        this.user = user;
+        this.failedAttempts = 0;
+        this.isLocked = false;
+        this.twoFactorEnabled = false;
+    }
+
+    public boolean authenticate(String email, String password) throws AuthenticationException {
+        if (isLocked) {
+            throw new AuthenticationException("Account is locked");
+        }
+
+        boolean isAuthenticated = verifyCredentials(email, password);
+        
+        if (!isAuthenticated) {
+            failedAttempts++;
+            if (failedAttempts >= MAX_FAILED_ATTEMPTS) {
+                lockAccount();
+            }
+            throw new AuthenticationException("Invalid credentials");
+        }
+
+        lastLogin = LocalDateTime.now();
+        failedAttempts = 0;
+        return true;
+    }
+
+    public void enable2FA() throws AuthenticationException {
+        // Implementation with proper validation
+        this.twoFactorEnabled = true;
+    }
+
+    public void disable2FA() throws AuthenticationException {
+        // Implementation with proper validation
+        this.twoFactorEnabled = false;
+    }
+
+    public void lockAccount() {
+        this.isLocked = true;
+    }
+
+    public void unlockAccount() throws AuthenticationException {
+        // Implementation with proper validation
+        this.isLocked = false;
+        this.failedAttempts = 0;
+    }
+
+    private boolean verifyCredentials(String email, String password) {
+        // Implementation of credential verification
+        return true;
+    }
 }
 
-// Login class
+/**
+ * Represents login credentials
+ */
 public class Login {
     private String userId;
-    private String password;
+    private String hashedPassword;
+    private LocalDateTime createdAt;
+    private LocalDateTime lastModified;
 
-    public boolean verifyLogin() {return true;}
+    public Login(String userId, String password) {
+        this.userId = userId;
+        this.hashedPassword = hashPassword(password);
+        this.createdAt = LocalDateTime.now();
+        this.lastModified = LocalDateTime.now();
+    }
+
+    public boolean verifyLogin() throws LoginException {
+        // Implementation with proper validation
+        return true;
+    }
+
+    private String hashPassword(String password) {
+        // Implementation of password hashing
+        return "hashedPassword";
+    }
 }
 
-// Messages class
-public class Messages {
+/**
+ * Represents a message in the system
+ */
+public class Message {
+    private String messageId;
     private User sender;
     private User receiver;
+    private String content;
     private LocalDateTime timestamp;
-    private List<User> user; //Association
+    private boolean isRead;
+    private boolean isDeleted;
 
-    public void sendMessage() {}
-    public void deleteChat() {}
-    public void editMessage() {}
-    public void showKeyboard() {}
-    public void loadProfiles() {}
-    public void showUsersProfile() {}
-    public void menu() {}
+    public Message(User sender, User receiver, String content) {
+        this.messageId = UUID.randomUUID().toString();
+        this.sender = sender;
+        this.receiver = receiver;
+        this.content = content;
+        this.timestamp = LocalDateTime.now();
+        this.isRead = false;
+        this.isDeleted = false;
+    }
+
+    public void sendMessage() throws MessageException {
+        // Implementation with proper validation
+    }
+
+    public void deleteMessage() throws MessageException {
+        if (isDeleted) {
+            throw new MessageException("Message already deleted");
+        }
+        this.isDeleted = true;
+    }
+
+    public void editMessage(String newContent) throws MessageException {
+        if (isDeleted) {
+            throw new MessageException("Cannot edit deleted message");
+        }
+        this.content = newContent;
+    }
+
+    public User getSender() {
+        return sender;
+    }
+
+    public User getReceiver() {
+        return receiver;
+    }
+
+    public LocalDateTime getTimestamp() {
+        return timestamp;
+    }
+
+    public boolean isRead() {
+        return isRead;
+    }
 }
 
-// Location class
+/**
+ * Represents a location in the system
+ */
 public class Location {
     private String locationId;
     private String name;
-    private float latitude;
-    private float longitude;
+    private double latitude;
+    private double longitude;
     private String address;
     private String city;
     private String postalCode;
+    private static final double EARTH_RADIUS = 6371; // kilometers
 
-    public float[] getCoordinates() { return new float[]{latitude, longitude}; }
-    public float getDistanceTo(Location other) { return 0.0f; }
-    public String formatAddress() { return address + ", " + city + ", " + postalCode; }
+    public Location(double latitude, double longitude, String address, String city, String postalCode) {
+        this.locationId = UUID.randomUUID().toString();
+        this.latitude = latitude;
+        this.longitude = longitude;
+        this.address = address;
+        this.city = city;
+        this.postalCode = postalCode;
+    }
+
+    public double[] getCoordinates() {
+        return new double[]{latitude, longitude};
+    }
+
+    public double getDistanceTo(Location other) throws LocationException {
+        if (other == null) {
+            throw new LocationException("Target location cannot be null");
+        }
+
+        double lat1 = Math.toRadians(this.latitude);
+        double lon1 = Math.toRadians(this.longitude);
+        double lat2 = Math.toRadians(other.latitude);
+        double lon2 = Math.toRadians(other.longitude);
+
+        double dLat = lat2 - lat1;
+        double dLon = lon2 - lon1;
+
+        double a = Math.sin(dLat/2) * Math.sin(dLat/2) +
+                   Math.cos(lat1) * Math.cos(lat2) *
+                   Math.sin(dLon/2) * Math.sin(dLon/2);
+        
+        double c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+        
+        return EARTH_RADIUS * c;
+    }
+
+    public String formatAddress() {
+        return String.format("%s, %s, %s", address, city, postalCode);
+    }
+
+    // Getters and setters with proper validation
+    public void setLatitude(double latitude) throws LocationException {
+        if (latitude < -90 || latitude > 90) {
+            throw new LocationException("Invalid latitude value");
+        }
+        this.latitude = latitude;
+    }
+
+    public void setLongitude(double longitude) throws LocationException {
+        if (longitude < -180 || longitude > 180) {
+            throw new LocationException("Invalid longitude value");
+        }
+        this.longitude = longitude;
+    }
 }
 
-// UserPreferences class
+
+
+
+/**
+ * Represents user preferences in the system
+ */
 public class UserPreferences {
     private boolean prefersNonSmoking;
     private boolean allowsPets;
     private String musicPreferences;
     private String talkativeness;
 
-    public void updatePreferences() {}
-    public boolean matchWithUser(User user) { return true; }
-    public boolean matchWithRoute(Route route) { return true; }
+    public void updatePreferences(PreferencesDTO preferences) {
+        this.prefersNonSmoking = preferences.getPrefersNonSmoking();
+        this.allowsPets = preferences.getAllowsPets();
+        this.musicPreferences = preferences.getMusicPreferences();
+        this.talkativeness = preferences.getTalkativeness();
+    }
+
+    public boolean matchWithUser(User user) {
+        // Implementation
+        return true;
+    }
+
+    public boolean matchWithRoute(Route route) {
+        // Implementation
+        return true;
+    }
 }
 
-// Payment class
+/**
+ * Represents a payment in the system
+ */
 public class Payment {
     private String paymentId;
     private Route route;
     private Passenger sender;
     private Driver receiver;
     private float amount;
-    private String status;
+    private PaymentStatus status;
     private LocalDateTime paidAt;
-    private List<Route> route; //Association
-    private List<User> user; //Association
 
-    public boolean process() { return true; }
-    public void cancel() {}
-    public boolean refund() { return true; }
-    public String getReceipt() { return "Receipt"; }
+    public Payment(Route route, Passenger sender, Driver receiver, float amount) {
+        this.paymentId = UUID.randomUUID().toString();
+        this.route = route;
+        this.sender = sender;
+        this.receiver = receiver;
+        this.amount = amount;
+        this.status = PaymentStatus.PENDING;
+    }
+
+    public boolean process() throws PaymentException {
+        // Implementation
+        return true;
+    }
+
+    public void cancel() throws PaymentException {
+        // Implementation
+    }
+
+    public boolean refund() throws PaymentException {
+        // Implementation
+        return true;
+    }
+
+    public String getReceipt() {
+        // Implementation
+        return "Receipt for payment " + paymentId;
+    }
 }
 
-// Search class
-public class Search{
+/**
+ * Represents a search functionality in the system
+ */
+public class Search {
+    public List<Route> getRoutes(SearchCriteria criteria) throws SearchException {
+        // Implementation
+        return new ArrayList<>();
+    }
 
-    public void getRoute() {}
-    public void getAvailableDrivers() {}
+    public List<Driver> getAvailableDrivers(Location location) throws SearchException {
+        // Implementation
+        return new ArrayList<>();
+    }
+}
+
+// Enums
+public enum RequestStatus {
+    PENDING, ACCEPTED, REJECTED, CANCELLED
+}
+
+public enum PaymentStatus {
+    PENDING, COMPLETED, FAILED, REFUNDED
+}
+
+public enum ReportStatus {
+    PENDING, UNDER_REVIEW, RESOLVED, CLOSED
+}
+
+public enum NotificationType {
+    RIDE_REQUEST, PAYMENT, SYSTEM, MESSAGE
+}
+
+// Custom Exceptions
+public class RouteException extends Exception {
+    public RouteException(String message) {
+        super(message);
+    }
+}
+
+public class PaymentException extends Exception {
+    public PaymentException(String message) {
+        super(message);
+    }
+}
+
+public class SearchException extends Exception {
+    public SearchException(String message) {
+        super(message);
+    }
+}
+
+// Custom exceptions
+public class HistoryException extends Exception {
+    public HistoryException(String message) {
+        super(message);
+    }
+}
+
+public class AuthenticationException extends Exception {
+    public AuthenticationException(String message) {
+        super(message);
+    }
+}
+
+public class LoginException extends Exception {
+    public LoginException(String message) {
+        super(message);
+    }
+}
+
+public class MessageException extends Exception {
+    public MessageException(String message) {
+        super(message);
+    }
+}
+
+public class LocationException extends Exception {
+    public LocationException(String message) {
+        super(message);
+    }
 }

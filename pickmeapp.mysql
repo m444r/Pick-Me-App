@@ -3,15 +3,63 @@ CREATE TABLE users (
     name VARCHAR(220) NOT NULL,
     email VARCHAR(220) NOT NULL,
     password VARCHAR(220) NOT NULL,
-    pickMode ENUM("PASSENGER","DRIVER")
+    pickMode ENUM("PASSENGER","DRIVER") NOT NULL
 );
 
 CREATE TABLE ride_requests (
     id INT AUTO_INCREMENT PRIMARY KEY,
     passenger_id INT NOT NULL,
     driver_id INT NOT NULL,
-    status ENUM('PENDING', 'ACCEPTED', 'REJECTED') DEFAULT 'PENDING',
+    route_id INT NOT NULL,
+    status ENUM('PENDING', 'ACCEPTED', 'REJECTED', 'COMPLETED') DEFAULT 'PENDING',
     timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (passenger_id) REFERENCES users(id),
     FOREIGN KEY (driver_id) REFERENCES users(id)
+    FOREIGN KEY (route_id) REFERENCES routes(id) ON DELETE CASCADE
 );
+
+CREATE TABLE drivers (
+    user_id INT PRIMARY KEY AUTO_INCREMENT,
+    is_available BOOLEAN DEFAULT TRUE,
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+);
+
+CREATE TABLE passengers (
+    user_id INT PRIMARY KEY AUTO_INCREMENT,
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+);
+
+CREATE TABLE vehicles (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    license_plate VARCHAR(20) UNIQUE NOT NULL,
+    model VARCHAR(100),
+    capacity INT,
+    driver_id VARCHAR(36),
+    FOREIGN KEY (driver_id) REFERENCES drivers(user_id) ON DELETE SET NULL
+);
+
+CREATE TABLE routes (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    origin VARCHAR(255) NOT NULL,
+    destination VARCHAR(255) NOT NULL
+);
+
+CREATE TABLE payments (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    ride_id INT NOT NULL,
+    amount DECIMAL(10, 2) NOT NULL,
+    status ENUM('PENDING', 'COMPLETED', 'FAILED') DEFAULT 'PENDING',
+    payment_time DATETIME,
+    FOREIGN KEY (ride_id) REFERENCES ride_requests(id) ON DELETE CASCADE
+);
+
+CREATE TABLE reviews (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    ride_id INT NOT NULL,
+    reviewer_id INT NOT NULL,
+    rating INT CHECK (rating >= 1 AND rating <= 5),
+    comment TEXT,
+    FOREIGN KEY (ride_id) REFERENCES ride_requests(id) ON DELETE CASCADE,
+    FOREIGN KEY (reviewer_id) REFERENCES users(id) ON DELETE CASCADE
+);
+
