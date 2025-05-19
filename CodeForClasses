@@ -1,0 +1,271 @@
+// User class
+public class User {
+    private String name;
+    private String email;
+    private float rating;
+    private boolean isVerified;
+    private String profilePicture;
+    private List<Report> report; //Association
+    private List<Messages> messages; //Association
+    private List<Notification> notification; //Association
+    private List<Review> review; //Association
+    private List<Payment> payment; //Association
+    private List<Login> login; //Composition
+    private List<RideHistory> rideHistory; //Association
+    private List<Authentication> authentication; //Composition
+    private List<UserPreferences> userPreferences; //Aggregation
+
+    public void register() {}
+    public boolean login() {return true;}
+    public void logout() {}
+    public boolean verifyUser(Authentication authentication) {return true;}
+    public void updateProfile() {}
+    public void rateUser(User user, float rating, String comment) {}
+    public User(String name, String email){}
+    public void addRideHistory(){}
+}
+// Driver class
+public class Driver extends User {
+    private String licenseNumber;
+    private Date lisenceExpireDate;
+    private Vehicle vehicle;
+    private List<Route> route; //Association
+    private List<Vehicle> vehicle; //Composition
+    private List<Route> route; //Composition
+
+    public Route createRoute(Location start, Location end, LocalDateTime departureTime) {return new Route();}
+    public void acceptRequest(RideRequest request) {}
+    public void rejectRequest(RideRequest request) {}
+    public void ratePassenger(Passenger passenger, float rating, String comment) {}
+}
+
+// Passenger class
+public class Passenger extends User {
+    private List<Route> route; //Association
+    private List<RideHistory> rideHistory; //Composition
+
+    public List<Route> searchRoutes(Location start, Location end) {return new ArrayList<>(); }
+    public RideRequest sendRideRequest(Route route) {return new RideRequest();}
+    public void cancelRequest(RideRequest request) {}
+    public void rateDriver(Driver driver, float rating, String comment) {}
+}
+
+// Vehicle class
+public class Vehicle {
+    private string vehicleId;
+    private Driver owner;
+    private string model;
+    private string brand;
+    private string color;
+    private int manufactureYear;
+    private string licensePlate;
+    private string fuelType;
+    private int totalSeats;
+    private int availableSeats;
+    private boolean insurance;
+    private boolean AC;
+    private boolean isSmokingAllowed;
+
+    public void updateAvailability(int seats) {}
+    public boolean isAvailable() {return availableSeats > 0;}
+    public void assignToDriver(Driver driver) {this.owner = driver;}
+}
+
+// Route class
+public class Route {
+    private string startLocation;
+    private string endLocation;
+    private LocalDateTime departureTime;
+    private LocalDateTime estimatedArrival;
+    private string routeId;
+    private boolean isActive;
+    private float passengerCost;
+    private List<Passenger> passengers;
+    private Driver driver;
+    private List<Payment> payment;
+    private List<RideRequest> rideRequest; //Association
+    private List<Passenger> passenger; //Association
+    private List<Location> location; //Aggregation
+
+
+
+    public void addPassenger(Passenger passenger) {}
+    public void removePassenger(Passenger passenger) {}
+    public boolean isSeatAvailable() {return true;}
+    public LocalDateTime calculateETA() {return LocalDateTime.now();}
+    public int getTotalPassengers() {return passengers.size();}
+}
+
+// RideRequest class
+public class RideRequest {
+    private String requestId;
+    private Passenger passenger;
+    private Route route;
+    private String status;
+    private LocalDateTime requestTime;
+    private LocalDateTime approvedTime;
+    private List<Route> route; //Association
+    private List<Messages> messages; //Association
+
+    public void accept() {}
+    public void reject() {}
+    public void cancel() {}
+    public String getStatus() {return status;
+    public String getUserInput() {}
+    public void saveRide() {}
+}
+
+// Review class
+public class Review {
+    private String reviewId;
+    private User reviewer;
+    private User reviewee;
+    private float rating;
+    private String comment;
+    private LocalDateTime createdAt;
+    private List<User> user; //Association
+
+    public void submit() {}
+    public void edit(float newRating, String newComment) {}
+    public void delete() {}
+}
+
+// Report class
+public class Report {
+    private String reportId;
+    private User reporter;
+    private User reportedUser;
+    private String reason;
+    private String description;
+    private String status;
+    private LocalDateTime createdTime;
+    private LocalDateTime resolvedTime;
+    private List<User> user; //Association
+
+    public void submit() {}
+    public void review() {}
+    public void close() {}
+}
+
+// Notification class
+public class Notification {
+    private User recipient;
+    private String message;
+    private String type;
+    private LocalDateTime sendTime;
+    private List<User> user; //Association
+
+    public void markAsRead() {}
+    public void delete() {}
+    public void getNotifications(){}
+    public void getSource(){}
+    public void redirectToSource(){}
+    public void showDetails(){}
+    public void openNot(){}
+}
+
+// RideHistory class
+public class RideHistory {
+    private String historyId;
+    private User user;
+    private Route route;
+    private String role;
+    private LocalDateTime completedTime;
+    private List<User> user; //Association
+
+    public List<Route> getRideHistoryForUser(User user) {return new ArrayList<>();}
+    public void addCompletedRide(Route route) {}
+    public void clearHistory() {}
+}
+
+// Authentication class
+public class Authentication {
+    private String authId;
+    private User user;
+    private LocalDateTime lastLogin;
+    private int failedAttempts;
+    private boolean isLocked;
+    private boolean twoFactorEnabled;
+
+    public boolean authenticate(String email, String password) {return true;}
+    public void enable2FA() {}
+    public void disable2FA() {}
+    public void lockAccount() {}
+    public void unlockAccount() {}
+}
+
+// Login class
+public class Login {
+    private String userId;
+    private String password;
+
+    public boolean verifyLogin() {return true;}
+}
+
+// Messages class
+public class Messages {
+    private User sender;
+    private User receiver;
+    private LocalDateTime timestamp;
+    private List<User> user; //Association
+
+    public void sendMessage() {}
+    public void deleteChat() {}
+    public void editMessage() {}
+    public void showKeyboard() {}
+    public void loadProfiles() {}
+    public void showUsersProfile() {}
+    public void menu() {}
+}
+
+// Location class
+public class Location {
+    private String locationId;
+    private String name;
+    private float latitude;
+    private float longitude;
+    private String address;
+    private String city;
+    private String postalCode;
+
+    public float[] getCoordinates() { return new float[]{latitude, longitude}; }
+    public float getDistanceTo(Location other) { return 0.0f; }
+    public String formatAddress() { return address + ", " + city + ", " + postalCode; }
+}
+
+// UserPreferences class
+public class UserPreferences {
+    private boolean prefersNonSmoking;
+    private boolean allowsPets;
+    private String musicPreferences;
+    private String talkativeness;
+
+    public void updatePreferences() {}
+    public boolean matchWithUser(User user) { return true; }
+    public boolean matchWithRoute(Route route) { return true; }
+}
+
+// Payment class
+public class Payment {
+    private String paymentId;
+    private Route route;
+    private Passenger sender;
+    private Driver receiver;
+    private float amount;
+    private String status;
+    private LocalDateTime paidAt;
+    private List<Route> route; //Association
+    private List<User> user; //Association
+
+    public boolean process() { return true; }
+    public void cancel() {}
+    public boolean refund() { return true; }
+    public String getReceipt() { return "Receipt"; }
+}
+
+// Search class
+public class Search{
+
+    public void getRoute() {}
+    public void getAvailableDrivers() {}
+}

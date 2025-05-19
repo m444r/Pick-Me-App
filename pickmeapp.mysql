@@ -1,0 +1,17 @@
+CREATE TABLE users (
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    name VARCHAR(220) NOT NULL,
+    email VARCHAR(220) NOT NULL,
+    password VARCHAR(220) NOT NULL,
+    pickMode ENUM("PASSENGER","DRIVER")
+);
+
+CREATE TABLE ride_requests (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    passenger_id INT NOT NULL,
+    driver_id INT NOT NULL,
+    status ENUM('PENDING', 'ACCEPTED', 'REJECTED') DEFAULT 'PENDING',
+    timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (passenger_id) REFERENCES users(id),
+    FOREIGN KEY (driver_id) REFERENCES users(id)
+);
