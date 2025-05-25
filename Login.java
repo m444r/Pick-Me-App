@@ -45,21 +45,19 @@ public class Login {
             String password = new String(passText.getPassword());
 
             if (authenticateUser(email, password)) {
-                frame.dispose(); // Κλείσιμο του login παραθύρου
-                if (Session.pickMode.equals("DRIVER")) {
-                    DriverHome driverHome = new DriverHome();
-                    driverHome.setVisible(true);
+                frame.dispose(); // Κλείνει το login παράθυρο
+
+                // Διάβασε το pickMode από το Session και άνοιξε το αντίστοιχο Home
+                if (Session.pickMode.equalsIgnoreCase("DRIVER")) {
+                    new DriverHome(); // Θα πρέπει να υπάρχει κλάση DriverHome
                 } else {
-                    PassengerHome passengerHome = new PassengerHome();
-                    passengerHome.setVisible(true);
+                    new PassengerHome();
                 }
-            }
-
-
-            else {
+            } else {
                 JOptionPane.showMessageDialog(panel, "Λανθασμένα στοιχεία.");
             }
         });
+
     }
 
     private static boolean authenticateUser(String email, String password) {
