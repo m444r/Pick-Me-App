@@ -1,89 +1,329 @@
 package pickmeapp;
 
-import org.openstreetmap.gui.jmapviewer.Coordinate;
-import org.openstreetmap.gui.jmapviewer.JMapViewer;
-import org.openstreetmap.gui.jmapviewer.MapMarkerDot;
-
 import javax.swing.*;
 import java.awt.*;
-import java.sql.*;
 
-public class DriverHome extends JFrame {
+import javax.swing.ImageIcon;
+import java.awt.Image;
+import javax.swing.JButton;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.BorderFactory;
+import javax.swing.JOptionPane;
+import java.awt.GridLayout;
+import java.awt.event.ActionListener; // αν χρησιμοποιείς ActionListener
+import java.sql.*; // αν κάνεις χρήση βάσης δεδομένων
+import javax.swing.JFrame;
+import javax.swing.SwingConstants;
+import java.util.Map;
+import java.util.HashMap;
+import javax.swing.JList;
+import javax.swing.JScrollPane;
+import java.awt.BorderLayout;
 
-    private JPanel requestsPanel;
-    private JMapViewer map;
-    private JButton iconButton;
+
+
+/**
+ *
+ * @author User
+ */
+public class DriverHome extends javax.swing.JFrame {
+
     private ImageIcon carIcon;
     private ImageIcon maleIcon;
-    private boolean iconToggled;
-    private JTextField addressField;
+     private JPanel requestsPanel;
+    private DefaultListModel<String> listModel;
+    private JList<String> requestsList;
+    //private jPanel jPane1;  // Panel για τις κάρτες
+    private Map<String, Integer> requestIdMap = new HashMap<>();
+    
 
+    
+   private void sendRideRequest( int driverId ,String pickup_Address, String address) {
+        String url = "jdbc:mysql://localhost:3306/pickmeapp";
+        String user = "root";
+        String password = "password";
+
+        String sql = "INSERT INTO ride_requests ( driver_id, pickup_address, address) VALUES ( ?, ?, ?)";
+
+        try (Connection conn = DriverManager.getConnection(url, user, password);
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+
+            pstmt.setInt(1, driverId);
+            pstmt.setString(3, pickup_Address);
+            pstmt.setString(2, address);
+            pstmt.executeUpdate();
+
+            System.out.println("Ride request saved!");
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+            System.out.println("Error saving ride request.");
+        }
+    }
+    
     public DriverHome() {
-        setTitle("Driver Home");
-        setSize(1000, 700);
+         initComponents();// Αν έχεις UI από NetBeans Form Editor
+
+        listModel = new DefaultListModel<>();
+        requestsList = new JList<>(listModel);
+
+      setTitle("Driver Home");
+        setSize(700, 700);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setLocationRelativeTo(null);
-        setLayout(new BorderLayout());
 
-        // Φόρτωση εικόνων
-        carIcon = new ImageIcon(getClass().getResource("icons/car.png"));
-        maleIcon = new ImageIcon(getClass().getResource("icons/male.png"));
-        Image scaledCar = carIcon.getImage().getScaledInstance(24, 24, Image.SCALE_SMOOTH);
-        Image scaledMale = maleIcon.getImage().getScaledInstance(24, 24, Image.SCALE_SMOOTH);
+        
+
+        JLabel label = new JLabel("Καλώς ήρθες οδηγέ!");
+        label.setHorizontalAlignment(SwingConstants.CENTER);
+        add(label, BorderLayout.NORTH);
+
+        
+        
+        
+        setLayout(new BorderLayout());
+    
+
+        
+        
+        carIcon = new ImageIcon(getClass().getResource("/pickmeapp/icons/car.png"));
+        maleIcon = new ImageIcon(getClass().getResource("/pickmeapp/icons/male.png"));
+
+        Image scaledCar = carIcon.getImage().getScaledInstance(32, 32, Image.SCALE_SMOOTH);
+        Image scaledMale = maleIcon.getImage().getScaledInstance(32, 32, Image.SCALE_SMOOTH);
+
         carIcon = new ImageIcon(scaledCar);
         maleIcon = new ImageIcon(scaledMale);
 
-        iconToggled = PickModeManager.fetchPickModeFromDB(Session.userId).equalsIgnoreCase("PASSENGER");
-        iconButton = new JButton(iconToggled ? maleIcon : carIcon);
-
-        // Χάρτης
-        map = new JMapViewer();
-        add(map, BorderLayout.CENTER);
-
-        // Πάνω δεξιά - κουμπί εικονιδίου
-        JPanel topRightPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
-        topRightPanel.add(iconButton);
-        add(topRightPanel, BorderLayout.NORTH);
-
-        iconButton.addActionListener(e -> {
-            PickModeManager.togglePickMode(this);
-        });
-
-        // Κάτω μέρος - Περιοχή αναζήτησης
-        JPanel searchPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
-        JLabel pickupLabel = new JLabel("Διεύθυνση Επιβίβασης: ");
-        JTextField pickupField = new JTextField(20);
-        JLabel addressLabel = new JLabel("Προορισμός ");
-        addressField = new JTextField(20);
-        JButton searchButton = new JButton("Search");
-
-        searchButton.addActionListener(e -> {
-            String address = addressField.getText();
-            if (!address.isEmpty()) {
-                Coordinate coord = new Coordinate(37.9838, 23.7275); // Placeholder
-                map.setDisplayPosition(coord, 12);
-                map.addMapMarker(new MapMarkerDot("Αναζήτηση", coord));
-            }
-        });
-
-        searchPanel.add(pickupLabel);
-        searchPanel.add(pickupField);
-        searchPanel.add(addressLabel);
-        searchPanel.add(addressField);
-        searchPanel.add(searchButton);
-        add(searchPanel, BorderLayout.SOUTH);
-
-        // Panel αιτημάτων
-        requestsPanel = new JPanel();
+        jToggleButton2.setIcon(maleIcon);
+        
+         requestsPanel = new JPanel();
         requestsPanel.setLayout(new BoxLayout(requestsPanel, BoxLayout.Y_AXIS));
         JScrollPane scrollPane = new JScrollPane(requestsPanel);
         scrollPane.setPreferredSize(new Dimension(350, getHeight()));
         add(scrollPane, BorderLayout.EAST);
-
-        loadRideRequests();
+        
+         loadRideRequests();
         setVisible(true);
+         
+
     }
 
+    /**
+     * This method is called from within the constructor to initialize the form.
+     * WARNING: Do NOT modify this code. The content of this method is always
+     * regenerated by the Form Editor.
+     */
+    @SuppressWarnings("unchecked")
+    // <editor-fold defaultstate="collapsed" desc="Generated Code">                          
+    private void initComponents() {
+
+        jButton2 = new javax.swing.JButton();
+        jButton3 = new javax.swing.JButton();
+        jButton4 = new javax.swing.JButton();
+        jButton5 = new javax.swing.JButton();
+        jToggleButton2 = new javax.swing.JToggleButton();
+        jLabel1 = new javax.swing.JLabel();
+        jLabel2 = new javax.swing.JLabel();
+        jTextField5 = new javax.swing.JTextField();
+        jTextField6 = new javax.swing.JTextField();
+        jButton1 = new javax.swing.JButton();
+
+        setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
+
+        jButton2.setIcon(new javax.swing.ImageIcon(getClass().getResource("/pickmeapp/icons/heart-938313_640.png"))); // NOI18N
+        jButton2.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButton2ActionPerformed(evt);
+            }
+        });
+
+        jButton3.setIcon(new javax.swing.ImageIcon(getClass().getResource("/pickmeapp/icons/images.png"))); // NOI18N
+        jButton3.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButton3ActionPerformed(evt);
+            }
+        });
+
+        jButton4.setIcon(new javax.swing.ImageIcon(getClass().getResource("/pickmeapp/icons/gray-user-profile-icon-png-fP8Q1P.png"))); // NOI18N
+        jButton4.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButton4ActionPerformed(evt);
+            }
+        });
+
+        jButton5.setIcon(new javax.swing.ImageIcon(getClass().getResource("/pickmeapp/icons/Basic_Elements_(161).png"))); // NOI18N
+        jButton5.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButton5ActionPerformed(evt);
+            }
+        });
+
+        jToggleButton2.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jToggleButton2ActionPerformed(evt);
+            }
+        });
+
+        jLabel1.setText("From");
+
+        jLabel2.setText("to");
+
+        jTextField5.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jTextField5ActionPerformed(evt);
+            }
+        });
+
+        jTextField6.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jTextField6ActionPerformed(evt);
+            }
+        });
+
+        jButton1.setText("Search");
+        jButton1.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButton1ActionPerformed(evt);
+            }
+        });
+
+        javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
+        getContentPane().setLayout(layout);
+        layout.setHorizontalGroup(
+            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(layout.createSequentialGroup()
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(jToggleButton2, javax.swing.GroupLayout.PREFERRED_SIZE, 54, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addGroup(layout.createSequentialGroup()
+                        .addComponent(jButton5)
+                        .addGap(0, 0, 0)
+                        .addComponent(jButton2)
+                        .addGap(0, 0, 0)
+                        .addComponent(jButton3)
+                        .addGap(0, 0, 0)
+                        .addComponent(jButton4))
+                    .addComponent(jButton1)
+                    .addGroup(layout.createSequentialGroup()
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                            .addComponent(jLabel2, javax.swing.GroupLayout.PREFERRED_SIZE, 37, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(jLabel1, javax.swing.GroupLayout.PREFERRED_SIZE, 37, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                            .addComponent(jTextField5, javax.swing.GroupLayout.DEFAULT_SIZE, 269, Short.MAX_VALUE)
+                            .addComponent(jTextField6))))
+                .addGap(0, 388, Short.MAX_VALUE))
+        );
+        layout.setVerticalGroup(
+            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+                .addComponent(jToggleButton2, javax.swing.GroupLayout.PREFERRED_SIZE, 41, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 467, Short.MAX_VALUE)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(jLabel1)
+                    .addComponent(jTextField5, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(jLabel2)
+                    .addComponent(jTextField6, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(jButton1)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
+                    .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                        .addComponent(jButton3, javax.swing.GroupLayout.PREFERRED_SIZE, 57, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addComponent(jButton4, javax.swing.GroupLayout.PREFERRED_SIZE, 57, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(jButton2, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(jButton5, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
+        );
+
+        pack();
+    }// </editor-fold>                        
+
+    private void jButton2ActionPerformed(java.awt.event.ActionEvent evt) {                                         
+        // TODO add your handling code here:
+    }                                        
+
+    private void jButton3ActionPerformed(java.awt.event.ActionEvent evt) {                                         
+        // TODO add your handling code here:
+    }                                        
+
+    private void jToggleButton2ActionPerformed(java.awt.event.ActionEvent evt) {                                               
+       if (jToggleButton2.isSelected()) {
+            jToggleButton2.setIcon(carIcon);  // Πατημένο => DRIVER
+        } else {
+            jToggleButton2.setIcon(maleIcon); // Ξεπατημένο => PASSENGER
+        }
+       PickModeManager.togglePickMode(this); 
+
+    }                                              
+
+    private void jTextField5ActionPerformed(java.awt.event.ActionEvent evt) {                                            
+        // TODO add your handling code here:
+    }                                           
+
+    private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {                                         
+         String pickup_Address = jTextField5.getText();
+    String address = jTextField6.getText();
+
+    if (pickup_Address.isEmpty() || address.isEmpty()) {
+        JOptionPane.showMessageDialog(this, "Συμπλήρωσε και τις δύο διευθύνσεις.");
+        return;
+    }
+
+    //int passengerId = Session.userId;  // Αν έχεις session
+    int driverId = Session.userId;  // Παράδειγμα – ιδανικά να είναι δυναμικό
+
+      
+    sendRideRequest( driverId, pickup_Address, address);
+    }                                        
+
+    private void jButton5ActionPerformed(java.awt.event.ActionEvent evt) {                                         
+         new DriverHome(); // Ξανανοίγει την αρχική σελίδα
+         this.dispose();
+    }                                        
+
+    private void jTextField6ActionPerformed(java.awt.event.ActionEvent evt) {                                            
+        // TODO add your handling code here:
+    }                                           
+
+    private void jButton4ActionPerformed(java.awt.event.ActionEvent evt) {                                         
+         new User(); // Ανοίγει νέο παράθυρο με το προφίλ
+         this.dispose(); 
+    }                                        
+
+    /**
+     * @param args the command line arguments
+     */
+    
+    private void showRequestDetails(int requestId) {
+    String sql = "SELECT u.name AS passenger_name, rr.address, rr.pickup_address " +
+                 "FROM ride_requests rr " +
+                 "JOIN users u ON rr.passenger_id = u.id " +
+                 "WHERE rr.id = ?";
+    try (Connection conn = DriverManager.getConnection("jdbc:mysql://localhost:3306/pickmeapp", "root", "password");
+         PreparedStatement stmt = conn.prepareStatement(sql)) {
+        
+        stmt.setInt(1, requestId);
+        ResultSet rs = stmt.executeQuery();
+        
+        if (rs.next()) {
+            String passenger = rs.getString("passenger_name");
+            String pickup = rs.getString("pickup_address");
+            String dest = rs.getString("address");
+
+            JOptionPane.showMessageDialog(this,
+                "Επιβάτης: " + passenger + "\nΑπό: " + pickup + "\nΠρος: " + dest,
+                "Λεπτομέρειες Αιτήματος", JOptionPane.INFORMATION_MESSAGE);
+        }
+    } catch (SQLException e) {
+        e.printStackTrace();
+        JOptionPane.showMessageDialog(this, "Σφάλμα εμφάνισης λεπτομερειών: " + e.getMessage());
+    }
+}
+
+    
     private void loadRideRequests() {
         String sql = "SELECT rr.id, u.name AS passenger_name, rr.address, rr.pickup_address " +
                      "FROM ride_requests rr " +
@@ -134,7 +374,8 @@ public class DriverHome extends JFrame {
         }
     }
 
-    private void updateRequestStatus(int requestId, String status) {
+    
+     private void updateRequestStatus(int requestId, String status) {
         String sql = "UPDATE ride_requests SET status = ? WHERE id = ?";
 
         try (Connection conn = DriverManager.getConnection("jdbc:mysql://localhost:3306/pickmeapp", "root", "password");
@@ -151,4 +392,57 @@ public class DriverHome extends JFrame {
             e.printStackTrace();
         }
     }
+    
+    
+    public static void main(String args[]) {
+        /* Set the Nimbus look and feel */
+        //<editor-fold defaultstate="collapsed" desc=" Look and feel setting code (optional) ">
+        /* If Nimbus (introduced in Java SE 6) is not available, stay with the default look and feel.
+         * For details see http://download.oracle.com/javase/tutorial/uiswing/lookandfeel/plaf.html 
+         */
+        try {
+            for (javax.swing.UIManager.LookAndFeelInfo info : javax.swing.UIManager.getInstalledLookAndFeels()) {
+                if ("Nimbus".equals(info.getName())) {
+                    javax.swing.UIManager.setLookAndFeel(info.getClassName());
+                    break;
+                }
+            }
+        } catch (ClassNotFoundException ex) {
+            java.util.logging.Logger.getLogger(DriverHome.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+        } catch (InstantiationException ex) {
+            java.util.logging.Logger.getLogger(DriverHome.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+        } catch (IllegalAccessException ex) {
+            java.util.logging.Logger.getLogger(DriverHome.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+        } catch (javax.swing.UnsupportedLookAndFeelException ex) {
+            java.util.logging.Logger.getLogger(DriverHome.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+        }
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+
+        /* Create and display the form */
+        java.awt.EventQueue.invokeLater(new Runnable() {
+            public void run() {
+                new DriverHome().setVisible(true);
+            }
+        });
+    }
+
+    // Variables declaration - do not modify                     
+    private javax.swing.JButton jButton1;
+    private javax.swing.JButton jButton2;
+    private javax.swing.JButton jButton3;
+    private javax.swing.JButton jButton4;
+    private javax.swing.JButton jButton5;
+    private javax.swing.JLabel jLabel1;
+    private javax.swing.JLabel jLabel2;
+    private javax.swing.JTextField jTextField5;
+    private javax.swing.JTextField jTextField6;
+    private javax.swing.JToggleButton jToggleButton2;
+    // End of variables declaration                   
 }
