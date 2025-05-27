@@ -14,6 +14,7 @@ public class Login {
         frame.add(panel);
         placeComponents(panel, frame);
 
+        frame.setLocationRelativeTo(null); // Κέντρο οθόνης
         frame.setVisible(true);
     }
 
@@ -49,11 +50,12 @@ public class Login {
 
                 // Διάβασε το pickMode από το Session και άνοιξε το αντίστοιχο Home
                 if (Session.pickMode.equalsIgnoreCase("DRIVER")) {
-                    new DriverHome(); // Θα πρέπει να υπάρχει κλάση DriverHome
+                    new DriverHome().setVisible(true);
                 } else {
-                    new PassengerHome();
+                   new PassangerHome().setVisible(true);
                 }
-            } else {
+            } 
+            else {
                 JOptionPane.showMessageDialog(panel, "Λανθασμένα στοιχεία.");
             }
         });
