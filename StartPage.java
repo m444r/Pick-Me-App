@@ -3,19 +3,24 @@ package pickmeapp;
 import javax.swing.*;
 import java.awt.event.*;
 
-public class StartPage {
-    public static void main(String[] args) {
-        JFrame frame = new JFrame("PickMeApp - Welcome");
-        frame.setSize(300, 150);
-        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+public class StartPage extends JFrame {
+
+    public StartPage() {
+        super("PickMeApp - Welcome");
+        setSize(300, 150);
+        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+
         JPanel panel = new JPanel();
-        frame.add(panel);
+        panel.setLayout(null);
+        add(panel);
+
         placeComponents(panel);
-        frame.setVisible(true);
+
+        setLocationRelativeTo(null); // για να βγει στο κέντρο
+        setVisible(true);
     }
 
-    private static void placeComponents(JPanel panel) {
-        panel.setLayout(null);
+    private void placeComponents(JPanel panel) {
 
         JButton registerButton = new JButton("Register");
         registerButton.setBounds(50, 20, 180, 30);
@@ -29,6 +34,7 @@ public class StartPage {
         registerButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 RegisterForm.showForm();
+                dispose();  // κλείνουμε αυτό το JFrame (το StartPage)
             }
         });
 
@@ -36,7 +42,12 @@ public class StartPage {
         loginButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 Login.main(null);
+                dispose();  // κλείνουμε αυτό το JFrame (το StartPage)
             }
         });
+    }
+
+    public static void main(String[] args) {
+        new StartPage();  // Δημιουργούμε και εμφανίζουμε το παράθυρο
     }
 }
