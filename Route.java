@@ -9,6 +9,10 @@ import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 
+import javax.swing.*;
+import java.awt.*;
+import java.net.*;
+import java.io.*;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -67,6 +71,62 @@ public class Route {
     public int getTotalPassengers() {
         return passengers.size();
     }
+    
+    private void createNewRoute() {
+    JCheckBox useCurrentLocationCheckbox = new JCheckBox("Χρήση τρέχουσας τοποθεσίας");
+    JTextField txtStart = new JTextField();
+    JTextField txtEnd = new JTextField();
+
+    JPanel panel = new JPanel(new GridLayout(0, 1));
+    panel.add(new JLabel("Αφετηρία (αν δεν επιλεγεί χρήση τοποθεσίας):"));
+    panel.add(txtStart);
+    panel.add(useCurrentLocationCheckbox);
+    panel.add(new JLabel("Προορισμός:"));
+    panel.add(txtEnd);
+
+    int result = JOptionPane.showConfirmDialog(this, panel, "Δημιουργία Διαδρομής", JOptionPane.OK_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE);
+
+    if (result == JOptionPane.OK_OPTION) {
+        String startStr = useCurrentLocationCheckbox.isSelected()
+            ? getApproximateLocationFromIP()
+            : txtStart.getText();
+
+        String endStr = txtEnd.getText();
+
+        JOptionPane.showMessageDialog(this, "✅ Αφετηρία: " + startStr + "\n📍 Προορισμός: " + endStr);
+    }
+}
+    
+    private String getApproximateLocationFromIP() {
+    try {
+        URL url = new URL("https://ipapi.co/json/");
+        HttpURLConnection con = (HttpURLConnection) url.openConnection();
+        con.setRequestMethod("GET");
+
+        BufferedReader in = new BufferedReader(new InputStreamReader(con.getInputStream()));
+        StringBuilder content = new StringBuilder();
+        String inputLine;
+
+        while ((inputLine = in.readLine()) != null) {
+            content.append(inputLine);
+        }
+
+        in.close();
+        con.disconnect();
+
+        String json = content.toString();
+        String city = json.split("\"city\":\"")[1].split("\"")[0];
+        String country = json.split("\"country_name\":\"")[1].split("\"")[0];
+
+        return city + ", " + country;
+
+    } catch (Exception e) {
+        System.out.println("❌ IP API failed.");
+        return "Unknown";
+    }
+}
+
+
 
     // Getters
     public Location getStartLocation() { return startLocation; }
