@@ -15,3 +15,8 @@ CREATE TABLE ride_requests (
     FOREIGN KEY (passenger_id) REFERENCES users(id),
     FOREIGN KEY (driver_id) REFERENCES users(id)
 );
+
+ CREATE TABLE favorites (
+         user_id INT,
+         route_text VARCHAR(255)
+     );
