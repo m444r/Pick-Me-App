@@ -63,3 +63,7 @@ CREATE TABLE reviews (
     FOREIGN KEY (reviewer_id) REFERENCES users(id) ON DELETE CASCADE
 );
 
+ CREATE TABLE favorites (
+         user_id INT,
+         route_text VARCHAR(255)
+     );

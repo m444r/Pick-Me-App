@@ -1,0 +1,599 @@
+
+package pickmeapp;
+
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
+import java.net.HttpURLConnection;
+import java.net.URL;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
+
+import javax.swing.*;
+import java.awt.*;
+import java.net.*;
+import java.io.*;
+
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
+
+public class Route {
+    private String id;
+    private Location startLocation;
+    private Location endLocation;
+    private LocalDateTime departureTime;
+    private LocalDateTime estimatedArrival;
+    private DriverHome driver;
+    private float costPerPassenger;
+    private boolean active;
+    private List<PassangerHome> passengers;
+
+    // Constructor
+    public Route(Location startLocation, Location endLocation, LocalDateTime departureTime, float costPerPassenger, DriverHome driver) {
+        this.startLocation = startLocation;
+        this.endLocation = endLocation;
+        this.departureTime = departureTime;
+        this.costPerPassenger = costPerPassenger;
+        this.driver = driver;
+        this.estimatedArrival = calculateETA();
+        this.passengers = new ArrayList<>();
+        this.active = true;
+        this.id = generateId();
+    }
+
+    private String generateId() {
+        return "ROUTE-" + System.currentTimeMillis();
+    }
+
+    private LocalDateTime calculateETA() {
+        // Απλά +1 ώρα για παράδειγμα (μπορούμε να βάλουμε απόσταση)
+        return departureTime.plusHours(1);
+    }
+
+    public boolean isActive() {
+        return active;
+    }
+
+    public boolean includes(Location loc) {
+        // Αν ταιριάζει περίπου με start ή end
+        return startLocation.isCloseTo(loc) || endLocation.isCloseTo(loc);
+    }
+
+    public boolean isMatchingRoute(Location start, Location end) {
+        return includes(start) && includes(end);
+    }
+
+    public void addPassenger(PassangerHome p) {
+        passengers.add(p);
+    }
+
+    public int getTotalPassengers() {
+        return passengers.size();
+    }
+    
+    public static void createNewRoute() {
+    JCheckBox useCurrentLocationCheckbox = new JCheckBox("Χρήση τρέχουσας τοποθεσίας");
+    JTextField txtStart = new JTextField();
+    JTextField txtEnd = new JTextField();
+
+    JPanel panel = new JPanel(new GridLayout(0, 1));
+    panel.add(new JLabel("Αφετηρία (ή επιλέξτε τρέχουσα):"));
+    panel.add(txtStart);
+    panel.add(useCurrentLocationCheckbox);
+    panel.add(new JLabel("Προορισμός:"));
+    panel.add(txtEnd);
+
+    int result = JOptionPane.showConfirmDialog(null, panel, "Δημιουργία Διαδρομής", JOptionPane.OK_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE);
+
+    if (result == JOptionPane.OK_OPTION) {
+        String startStr = useCurrentLocationCheckbox.isSelected() ? getApproximateLocationFromIP() : txtStart.getText();
+        String endStr = txtEnd.getText();
+        
+        
+
+        String sql;
+        if ("DRIVER".equalsIgnoreCase(Session.pickMode)) {
+            sql = "INSERT INTO ride_requests (driver_id, pickup_address , address, timestamp) VALUES (?, ?, ?, NOW())";
+        } else {
+            sql = "INSERT INTO ride_requests (passenger_id, pickup_address , address, timestamp) VALUES (?, ?, ?, NOW())";
+        }
+
+        try (Connection conn = DriverManager.getConnection("jdbc:mysql://localhost:3306/pickmeapp", "root", "password");
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+            stmt.setInt(1, Session.userId);
+            stmt.setString(2, startStr);
+            stmt.setString(3, endStr);
+            stmt.executeUpdate();
+
+            JOptionPane.showMessageDialog(null,
+                "✅ Διαδρομή αποθηκεύτηκε:\nΑπό: " + startStr + "\nΠρος: " + endStr);
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+            JOptionPane.showMessageDialog(null, "❌ Σφάλμα αποθήκευσης διαδρομής: " + e.getMessage());
+        }
+    }
+}
+
+    public static String getApproximateLocationFromIP() {
+    try {
+        URL url = new URL("https://ipapi.co/json/");
+        HttpURLConnection con = (HttpURLConnection) url.openConnection();
+        con.setRequestMethod("GET");
+        con.setRequestProperty("User-Agent", "Mozilla/5.0"); // Χρήσιμο για αποδοχή από το API
+
+        BufferedReader in = new BufferedReader(new InputStreamReader(con.getInputStream()));
+        StringBuilder content = new StringBuilder();
+        String inputLine;
+
+        while ((inputLine = in.readLine()) != null) {
+            content.append(inputLine);
+        }
+
+        in.close();
+        con.disconnect();
+
+        String json = content.toString();
+        System.out.println("🔎 JSON Απόκριση: " + json); // Εκτύπωσε το για έλεγχο
+
+        // Εξαγωγή πεδίων με ασφαλή τρόπο
+        if (json.contains("\"city\":\"") && json.contains("\"country_name\":\"")) {
+            String city = json.split("\"city\":\"")[1].split("\"")[0];
+            String country = json.split("\"country_name\":\"")[1].split("\"")[0];
+            return city + ", " + country;
+        } else {
+            System.out.println("⚠️ Δεν βρέθηκαν τα πεδία city ή country_name.");
+            return "Unknown";
+        }
+
+    } catch (Exception e) {
+        System.out.println("❌ Σφάλμα κατά το αίτημα στο IP API.");
+        e.printStackTrace();
+        return "Unknown";
+    }
+}
+
+
+
+
+    // Getters
+    public Location getStartLocation() { return startLocation; }
+    public Location getEndLocation() { return endLocation; }
+    public DriverHome getDriver() { return driver; }
+    public String getId() { return id; }
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+package pickmeapp;
+import javax.swing.*;
+import java.awt.*;
+
+import javax.swing.ImageIcon;
+import java.awt.Image;
+import java.sql.*;
+import javax.swing.JFrame;
+import javax.swing.SwingConstants;
+import javax.swing.JFrame;
+import javax.swing.JLabel;
+import javax.swing.SwingConstants;
+import javax.swing.JOptionPane;
+import javax.swing.JTextField;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import java.awt.BorderLayout;
+
+
+import javax.swing.ImageIcon;
+
+/**
+ *
+ * @author User
+ */
+public class PassangerHome extends javax.swing.JFrame {
+
+    private JPanel requestListPanel; 
+    private ImageIcon carIcon;
+    private ImageIcon maleIcon;
+    private JPanel matchingDriversPanel;
+     private javax.swing.JTextField jTextField5;
+    private javax.swing.JTextField jTextField6;
+    
+   public PassangerHome() {
+    initComponents();
+     requestListPanel = new JPanel();
+    requestListPanel.setLayout(new BoxLayout(requestListPanel, BoxLayout.Y_AXIS));
+    JScrollPane scrollPane = new JScrollPane(requestListPanel);
+    scrollPane.setPreferredSize(new Dimension(300, 0));
+    
+    matchingDriversPanel = new JPanel();
+        matchingDriversPanel.setLayout(new BoxLayout(matchingDriversPanel, BoxLayout.Y_AXIS));
+        JScrollPane scrollPane1 = new JScrollPane(matchingDriversPanel);
+        scrollPane1.setPreferredSize(new Dimension(300, 0));
+    
+    
+
+    // Παίρνουμε τα υπάρχοντα components από το contentPane
+    Container oldContent = getContentPane();
+    Component[] oldComponents = oldContent.getComponents();
+
+    // Δημιουργούμε νέο panel με BorderLayout
+    JPanel wrapperPanel = new JPanel(new BorderLayout());
+
+    // Δημιουργούμε panel CENTER για να βάλουμε το NetBeans GUI layout
+    JPanel centerPanel = new JPanel();
+    centerPanel.setLayout(new GroupLayout(centerPanel));
+    for (Component comp : oldComponents) {
+        centerPanel.add(comp);
+    }
+
+    // Αφαιρούμε τα παλιά και ορίζουμε το wrapper ως νέο content pane
+    oldContent.removeAll();
+    wrapperPanel.add(centerPanel, BorderLayout.CENTER);
+    wrapperPanel.add(scrollPane, BorderLayout.EAST);
+    setContentPane(wrapperPanel);
+
+    // υπόλοιπος κώδικας όπως setTitle(), setSize() κλπ.
+    setTitle("Passenger Home");
+    setSize(700, 700); // μεγαλώστε το παράθυρο για να χωράει το panel δεξιά
+    setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+    setLocationRelativeTo(null);
+
+    // αρχικοποίηση εικονιδίων, κλπ...
+    carIcon = new ImageIcon(getClass().getResource("/pickmeapp/icons/car.png"));
+    maleIcon = new ImageIcon(getClass().getResource("/pickmeapp/icons/male.png"));
+
+    Image scaledCar = carIcon.getImage().getScaledInstance(32, 32, Image.SCALE_SMOOTH);
+    Image scaledMale = maleIcon.getImage().getScaledInstance(32, 32, Image.SCALE_SMOOTH);
+
+    carIcon = new ImageIcon(scaledCar);
+    maleIcon = new ImageIcon(scaledMale);
+
+    if ("DRIVER".equalsIgnoreCase(Session.pickMode)) {
+    jToggleButton2.setSelected(true);
+    jToggleButton2.setIcon(carIcon);
+} else {
+    jToggleButton2.setSelected(false);
+    jToggleButton2.setIcon(maleIcon);
+}
+    jToggleButton2.setIcon(maleIcon);
+
+    setVisible(true);
+
+    showUserRequests();
+}
+
+    /**
+     * This method is called from within the constructor to initialize the form.
+     * WARNING: Do NOT modify this code. The content of this method is always
+     * regenerated by the Form Editor.
+     */
+    @SuppressWarnings("unchecked")
+    // <editor-fold defaultstate="collapsed" desc="Generated Code">                          
+    private void initComponents() {
+
+        jToggleButton2 = new javax.swing.JToggleButton();
+        jButton1 = new javax.swing.JButton();
+        jButton2 = new javax.swing.JButton();
+        jButton3 = new javax.swing.JButton();
+        jButton4 = new javax.swing.JButton();
+        jButton5 = new javax.swing.JButton();
+        jLabel3 = new javax.swing.JLabel();
+
+        setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
+
+        jToggleButton2.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jToggleButton2ActionPerformed(evt);
+            }
+        });
+
+        jButton1.setIcon(new javax.swing.ImageIcon(getClass().getResource("/pickmeapp/icons/Basic_Elements_(161).png"))); // NOI18N
+        jButton1.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButton1ActionPerformed(evt);
+            }
+        });
+
+        jButton2.setIcon(new javax.swing.ImageIcon(getClass().getResource("/pickmeapp/icons/heart-938313_640.png"))); // NOI18N
+
+        jButton3.setIcon(new javax.swing.ImageIcon(getClass().getResource("/pickmeapp/icons/images.png"))); // NOI18N
+
+        jButton4.setIcon(new javax.swing.ImageIcon(getClass().getResource("/pickmeapp/icons/gray-user-profile-icon-png-fP8Q1P.png"))); // NOI18N
+        jButton4.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButton4ActionPerformed(evt);
+            }
+        });
+
+        jButton5.setText("Αναζήτηση Διαδρομής");
+        jButton5.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButton5ActionPerformed(evt);
+            }
+        });
+
+        jLabel3.setFont(new java.awt.Font("Segoe Script", 0, 36)); // NOI18N
+        jLabel3.setText("HOME");
+
+        javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
+        getContentPane().setLayout(layout);
+        layout.setHorizontalGroup(
+            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(layout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(jButton5)
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+            .addGroup(layout.createSequentialGroup()
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(layout.createSequentialGroup()
+                        .addComponent(jButton1)
+                        .addGap(0, 0, 0)
+                        .addComponent(jButton2)
+                        .addGap(0, 0, 0)
+                        .addComponent(jButton3)
+                        .addGap(0, 0, 0)
+                        .addComponent(jButton4))
+                    .addComponent(jToggleButton2, javax.swing.GroupLayout.PREFERRED_SIZE, 54, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addGroup(layout.createSequentialGroup()
+                        .addGap(111, 111, 111)
+                        .addComponent(jLabel3, javax.swing.GroupLayout.PREFERRED_SIZE, 152, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                .addGap(0, 437, Short.MAX_VALUE))
+        );
+        layout.setVerticalGroup(
+            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(layout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(jLabel3)
+                .addGap(70, 70, 70)
+                .addComponent(jToggleButton2, javax.swing.GroupLayout.PREFERRED_SIZE, 37, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 389, Short.MAX_VALUE)
+                .addComponent(jButton5)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(jButton1, javax.swing.GroupLayout.Alignment.TRAILING)
+                    .addComponent(jButton2, javax.swing.GroupLayout.Alignment.TRAILING)
+                    .addComponent(jButton3, javax.swing.GroupLayout.Alignment.TRAILING)
+                    .addComponent(jButton4, javax.swing.GroupLayout.Alignment.TRAILING)))
+        );
+
+        pack();
+    }// </editor-fold>                        
+
+    private void jToggleButton2ActionPerformed(java.awt.event.ActionEvent evt) {                                               
+               
+        PickModeManager.togglePickMode(this);
+    }                                              
+
+    private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {                                         
+        new PassangerHome(); // Ξανανοίγει την αρχική σελίδα
+        this.dispose();
+    }                                        
+
+    private void jButton5ActionPerformed(java.awt.event.ActionEvent evt) {                                         
+    
+       /* String pickup_Address = jTextField1.getText();
+    String address = jTextField2.getText();
+
+    if (pickup_Address.isEmpty() || address.isEmpty()) {
+        JOptionPane.showMessageDialog(this, "Συμπλήρωσε και τις δύο διευθύνσεις.");
+        return;
+    }
+
+    int passengerId = Session.userId;  // Αν έχεις session*/
+   
+    Route.createNewRoute();
+    showUserRequests();
+    //sendRideRequest(passengerId, pickup_Address, address);
+    }                                        
+
+    private void jButton4ActionPerformed(java.awt.event.ActionEvent evt) {                                         
+       new User(); // Ανοίγει νέο παράθυρο με το προφίλ
+       this.dispose();
+    }                                        
+
+    /**
+     * @param args the command line arguments
+     */
+    public static void main(String args[]) {
+        /* Set the Nimbus look and feel */
+        //<editor-fold defaultstate="collapsed" desc=" Look and feel setting code (optional) ">
+        /* If Nimbus (introduced in Java SE 6) is not available, stay with the default look and feel.
+         * For details see http://download.oracle.com/javase/tutorial/uiswing/lookandfeel/plaf.html 
+         */
+        try {
+            for (javax.swing.UIManager.LookAndFeelInfo info : javax.swing.UIManager.getInstalledLookAndFeels()) {
+                if ("Nimbus".equals(info.getName())) {
+                    javax.swing.UIManager.setLookAndFeel(info.getClassName());
+                    break;
+                }
+            }
+        } catch (ClassNotFoundException ex) {
+            java.util.logging.Logger.getLogger(PassangerHome.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+        } catch (InstantiationException ex) {
+            java.util.logging.Logger.getLogger(PassangerHome.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+        } catch (IllegalAccessException ex) {
+            java.util.logging.Logger.getLogger(PassangerHome.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+        } catch (javax.swing.UnsupportedLookAndFeelException ex) {
+            java.util.logging.Logger.getLogger(PassangerHome.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+        }
+        //</editor-fold>
+
+        /* Create and display the form */
+        java.awt.EventQueue.invokeLater(new Runnable() {
+            public void run() {
+                new PassangerHome().setVisible(true);
+            }
+        });
+    }
+    
+     public void searchForDrivers(String start, String end) {
+        String sql = "SELECT u.id, u.name, r.start_location, r.end_location " +
+                     "FROM routes r " +
+                     "JOIN users u ON r.driver_id = u.id " +
+                     "WHERE r.start_location LIKE ? AND r.end_location LIKE ?";
+
+        matchingDriversPanel.removeAll();
+
+        try (Connection conn = DriverManager.getConnection("jdbc:mysql://localhost:3306/pickmeapp", "root", "password");
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+            stmt.setString(1, "%" + start + "%");
+            stmt.setString(2, "%" + end + "%");
+
+            ResultSet rs = stmt.executeQuery();
+
+            boolean found = false;
+
+            while (rs.next()) {
+                int driverId = rs.getInt("id");
+                String name = rs.getString("name");
+                String from = rs.getString("start_location");
+                String to = rs.getString("end_location");
+
+                JPanel card = new JPanel(new GridLayout(0, 1));
+                card.setBorder(BorderFactory.createTitledBorder("Οδηγός"));
+                card.add(new JLabel("Ονοματεπώνυμο: " + name));
+                card.add(new JLabel("Διαδρομή: " + from + " → " + to));
+
+                JButton chooseBtn = new JButton("Επιλογή");
+                chooseBtn.addActionListener(e -> {
+                    sendRideRequest(driverId, start, end);
+                    JOptionPane.showMessageDialog(this, "✅ Το αίτημα στάλθηκε στον οδηγό " + name);
+                });
+                card.add(chooseBtn);
+
+                matchingDriversPanel.add(card);
+                found = true;
+            }
+
+            if (!found) {
+                matchingDriversPanel.add(new JLabel("❌ Δεν βρέθηκαν διαθέσιμοι οδηγοί."));
+            }
+
+            matchingDriversPanel.revalidate();
+            matchingDriversPanel.repaint();
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+            JOptionPane.showMessageDialog(this, "❌ Σφάλμα κατά την αναζήτηση οδηγών: " + e.getMessage());
+        }
+    }
+    
+    private void sendRideRequest(int passengerId,String pickup_Address, String address) {
+        String url = "jdbc:mysql://localhost:3306/pickmeapp";
+        String user = "root";
+        String password = "password";
+
+        String sql = "INSERT INTO ride_requests (passenger_id, pickup_address, address) VALUES (?, ?, ?)";
+
+        try (Connection conn = DriverManager.getConnection(url, user, password);
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+
+            pstmt.setInt(1, passengerId);
+            pstmt.setString(3, pickup_Address);
+            pstmt.setString(2, address);
+            pstmt.executeUpdate();
+
+            System.out.println("Ride request saved!");
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+            System.out.println("Error saving ride request.");
+        }
+    }
+    
+     private void showUserRequests() {
+    requestListPanel.removeAll();
+
+    String sql = "SELECT id, address, pickup_address, status, timestamp FROM ride_requests WHERE passenger_id = ? ORDER BY timestamp DESC";
+
+    String url = "jdbc:mysql://localhost:3306/pickmeapp";
+    String dbUser = "root";
+    String dbPassword = "password";
+        
+    try (Connection conn = DriverManager.getConnection(url, dbUser, dbPassword);
+         PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+        stmt.setInt(1, Session.userId);
+        ResultSet rs = stmt.executeQuery();
+
+        while (rs.next()) {
+            int requestId = rs.getInt("id");
+            String pickup = rs.getString("pickup_address");
+            String destination = rs.getString("address");
+            String status = rs.getString("status");
+            String time = rs.getString("timestamp");
+
+            JPanel itemPanel = new JPanel(new BorderLayout());
+            itemPanel.setBorder(BorderFactory.createLineBorder(Color.GRAY));
+            itemPanel.setMaximumSize(new Dimension(280, 80));
+
+            JLabel infoLabel = new JLabel("<html><b>ID:</b> " + requestId +
+                    "<br><b>Από:</b> " + pickup +
+                    "<br><b>Προς:</b> " + destination +
+                    "<br><b>Κατάσταση:</b> " + status + "</html>");
+            itemPanel.add(infoLabel, BorderLayout.CENTER);
+
+            if (status.equalsIgnoreCase("PENDING")) {
+                JButton cancelBtn = new JButton("Ακύρωση");
+                cancelBtn.addActionListener(e -> {
+                    cancelRequest(requestId);
+                    showUserRequests(); // Refresh
+                });
+                itemPanel.add(cancelBtn, BorderLayout.EAST);
+            }
+
+            requestListPanel.add(itemPanel);
+        }
+
+        requestListPanel.revalidate();
+        requestListPanel.repaint();
+
+    } catch (SQLException e) {
+        e.printStackTrace();
+    }
+    
+
+}
+
+    private void cancelRequest(int requestId) {
+    String sql = "UPDATE ride_requests SET status='CANCELLED' WHERE id = ? AND status = 'PENDING'";
+    try (Connection conn = DriverManager.getConnection("jdbc:mysql://localhost:3306/pickmeapp", "root", "password");
+         PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+        stmt.setInt(1, requestId);
+        stmt.executeUpdate();
+
+    } catch (SQLException e) {
+        e.printStackTrace();
+    }
+}
+
+
+    // Variables declaration - do not modify                     
+    private javax.swing.JButton jButton1;
+    private javax.swing.JButton jButton2;
+    private javax.swing.JButton jButton3;
+    private javax.swing.JButton jButton4;
+    private javax.swing.JButton jButton5;
+    private javax.swing.JLabel jLabel3;
+    private javax.swing.JToggleButton jToggleButton2;
+    // End of variables declaration                   
+}
