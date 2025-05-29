@@ -443,7 +443,7 @@ public class PassangerHome extends javax.swing.JFrame {
         });
     }
     
-     public static void searchForDrivers(String start, String end) {
+     public void searchForDrivers(String start, String end) {
         String sql = "SELECT u.id, u.name, r.start_location, r.end_location " +
                      "FROM routes r " +
                      "JOIN users u ON r.driver_id = u.id " +
