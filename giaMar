@@ -1,0 +1,193 @@
+package com.pickme.pickmeapp;
+
+import javax.swing.*;
+import java.awt.*;
+import java.net.*;
+import java.io.*;
+import java.sql.*;
+import java.util.HashMap;
+import java.util.Map;
+
+public class DriverHome extends JFrame {
+
+    private ImageIcon carIcon;
+    private ImageIcon maleIcon;
+    private JPanel requestsPanel;
+    private DefaultListModel<String> listModel;
+    private JList<String> requestsList;
+    private Map<String, Integer> requestIdMap = new HashMap<>();
+
+    public DriverHome() {
+        setTitle("Driver Home");
+        setSize(700, 700);
+        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        setLocationRelativeTo(null);
+        setLayout(new BorderLayout());
+
+        // Welcome
+        JLabel label = new JLabel("Καλώς ήρθες οδηγέ!");
+        label.setHorizontalAlignment(SwingConstants.CENTER);
+        add(label, BorderLayout.NORTH);
+
+        // Icons
+        carIcon = new ImageIcon(getClass().getResource("/pickmeapp/icons/car.png"));
+        maleIcon = new ImageIcon(getClass().getResource("/pickmeapp/icons/male.png"));
+        carIcon = new ImageIcon(carIcon.getImage().getScaledInstance(32, 32, Image.SCALE_SMOOTH));
+        maleIcon = new ImageIcon(maleIcon.getImage().getScaledInstance(32, 32, Image.SCALE_SMOOTH));
+
+        // Requests panel
+        requestsPanel = new JPanel();
+        requestsPanel.setLayout(new BoxLayout(requestsPanel, BoxLayout.Y_AXIS));
+        JScrollPane scrollPane = new JScrollPane(requestsPanel);
+        scrollPane.setPreferredSize(new Dimension(350, getHeight()));
+        add(scrollPane, BorderLayout.EAST);
+
+        // Κουμπί: Δημιουργία Διαδρομής
+        JButton btnCreateRoute = new JButton("Δημιουργία Διαδρομής");
+        btnCreateRoute.addActionListener(e -> createNewRoute());
+
+        // Κουμπί: Προφίλ Χρήστη
+        JButton btnUserProfile = new JButton("Προφίλ Χρήστη");
+        btnUserProfile.addActionListener(e -> new UserProfile(Session.userId));
+
+        // Panel κουμπιών
+        JPanel bottomPanel = new JPanel();
+        bottomPanel.add(btnCreateRoute);
+        bottomPanel.add(btnUserProfile);
+        add(bottomPanel, BorderLayout.SOUTH);
+
+        // Φόρτωση αιτημάτων
+        loadRideRequests();
+
+        setVisible(true);
+    }
+
+    private void loadRideRequests() {
+        String sql = "SELECT rr.id, u.name AS passenger_name, rr.address, rr.pickup_address " +
+                     "FROM ride_requests rr " +
+                     "JOIN users u ON rr.passenger_id = u.id " +
+                     "WHERE rr.driver_id = ? AND rr.status = 'PENDING' ORDER BY rr.timestamp DESC";
+
+        try (Connection conn = DriverManager.getConnection("jdbc:mysql://localhost:3306/pickmeapp", "root", "password");
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+            stmt.setInt(1, Session.userId);
+            ResultSet rs = stmt.executeQuery();
+
+            requestsPanel.removeAll();
+
+            while (rs.next()) {
+                int requestId = rs.getInt("id");
+                String passengerName = rs.getString("passenger_name");
+                String address = rs.getString("address");
+                String pickupAddress = rs.getString("pickup_address");
+
+                JPanel requestCard = new JPanel(new GridLayout(0, 1));
+                requestCard.setBorder(BorderFactory.createTitledBorder("Αίτημα"));
+                requestCard.add(new JLabel("Επιβάτης: " + passengerName));
+                requestCard.add(new JLabel("Διεύθυνση: " + address));
+                requestCard.add(new JLabel("Επιβίβαση από: " + pickupAddress));
+
+                JButton acceptBtn = new JButton("Αποδοχή");
+                JButton rejectBtn = new JButton("Απόρριψη");
+
+                acceptBtn.addActionListener(e -> updateRequestStatus(requestId, "ACCEPTED"));
+                rejectBtn.addActionListener(e -> updateRequestStatus(requestId, "REJECTED"));
+
+                JPanel buttonPanel = new JPanel();
+                buttonPanel.add(acceptBtn);
+                buttonPanel.add(rejectBtn);
+                requestCard.add(buttonPanel);
+
+                requestsPanel.add(requestCard);
+            }
+
+            requestsPanel.revalidate();
+            requestsPanel.repaint();
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+            JOptionPane.showMessageDialog(this, "Σφάλμα στη φόρτωση αιτημάτων: " + e.getMessage());
+        }
+    }
+
+    private void updateRequestStatus(int requestId, String status) {
+        String sql = "UPDATE ride_requests SET status = ? WHERE id = ?";
+        try (Connection conn = DriverManager.getConnection("jdbc:mysql://localhost:3306/pickmeapp", "root", "password");
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+            stmt.setString(1, status);
+            stmt.setInt(2, requestId);
+            stmt.executeUpdate();
+
+            JOptionPane.showMessageDialog(this, "Η κατάσταση ενημερώθηκε.");
+            loadRideRequests();
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void createNewRoute() {
+        JCheckBox useCurrentLocationCheckbox = new JCheckBox("Χρήση τρέχουσας τοποθεσίας");
+        JTextField txtStart = new JTextField();
+        JTextField txtEnd = new JTextField();
+
+        JPanel panel = new JPanel(new GridLayout(0, 1));
+        panel.add(new JLabel("Αφετηρία:")); panel.add(txtStart);
+        panel.add(useCurrentLocationCheckbox);
+        panel.add(new JLabel("Προορισμός:")); panel.add(txtEnd);
+
+        int result = JOptionPane.showConfirmDialog(this, panel, "Νέα Διαδρομή", JOptionPane.OK_CANCEL_OPTION);
+
+        if (result == JOptionPane.OK_OPTION) {
+            String startStr = useCurrentLocationCheckbox.isSelected() ? getApproximateLocationFromIP() : txtStart.getText();
+            String endStr = txtEnd.getText();
+
+            String sql = "INSERT INTO routes (driver_id, start_location, end_location, departure_time) VALUES (?, ?, ?, NOW())";
+
+            try (Connection conn = DriverManager.getConnection("jdbc:mysql://localhost:3306/pickmeapp", "root", "password");
+                 PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+                stmt.setInt(1, Session.userId);
+                stmt.setString(2, startStr);
+                stmt.setString(3, endStr);
+                stmt.executeUpdate();
+
+                JOptionPane.showMessageDialog(this, "✅ Διαδρομή αποθηκεύτηκε:\nΑπό: " + startStr + "\nΠρος: " + endStr);
+
+            } catch (SQLException e) {
+                e.printStackTrace();
+                JOptionPane.showMessageDialog(this, "❌ Σφάλμα αποθήκευσης διαδρομής: " + e.getMessage());
+            }
+        }
+    }
+
+    private String getApproximateLocationFromIP() {
+        try {
+            URL url = new URL("https://ipapi.co/json/");
+            HttpURLConnection con = (HttpURLConnection) url.openConnection();
+            con.setRequestMethod("GET");
+
+            BufferedReader in = new BufferedReader(new InputStreamReader(con.getInputStream()));
+            StringBuilder content = new StringBuilder();
+            String inputLine;
+
+            while ((inputLine = in.readLine()) != null) {
+                content.append(inputLine);
+            }
+
+            in.close();
+            con.disconnect();
+
+            String json = content.toString();
+            String city = json.split("\"city\":\"")[1].split("\"")[0];
+            String country = json.split("\"country_name\":\"")[1].split("\"")[0];
+
+            return city + ", " + country;
+
+        } catch (Exception e) {
+            return "Unknown";
+        }
+    }
+}
