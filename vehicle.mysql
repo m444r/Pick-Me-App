@@ -1,17 +1,12 @@
 CREATE TABLE vehicle (
     id INT AUTO_INCREMENT PRIMARY KEY,
     driver_id INT NOT NULL,
-    vehicle_id VARCHAR(50),
-    model VARCHAR(50),
     brand VARCHAR(50),
+    model VARCHAR(50),
     color VARCHAR(30),
-    manufacture_year INT,
     license_plate VARCHAR(20),
-    fuel_type VARCHAR(30),
     total_seats INT,
-    available_seats INT,
-    insurance BOOLEAN,
     ac BOOLEAN,
     smoking_allowed BOOLEAN,
-    FOREIGN KEY (driver_id) REFERENCES users(id)
+    FOREIGN KEY (driver_id) REFERENCES users(id) ON DELETE CASCADE
 );
