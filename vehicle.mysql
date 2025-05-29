@@ -5,6 +5,7 @@ CREATE TABLE vehicle (
     model VARCHAR(50),
     color VARCHAR(30),
     license_plate VARCHAR(20),
+    fuel_type VARCHAR(30),
     total_seats INT,
     ac BOOLEAN,
     smoking_allowed BOOLEAN,
