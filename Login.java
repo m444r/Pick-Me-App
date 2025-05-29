@@ -52,7 +52,7 @@ public class Login {
                 if (Session.pickMode.equalsIgnoreCase("DRIVER")) {
                     new DriverHome().setVisible(true);
                 } else {
-                   new PassangerHome().setVisible(true);
+                   new PassengerHome().setVisible(true);
                 }
             } 
             else {
