@@ -48,7 +48,7 @@ public class DriverHome extends JFrame {
 
         // Κουμπί: Προφίλ Χρήστη
         JButton btnUserProfile = new JButton("Προφίλ Χρήστη");
-        btnUserProfile.addActionListener(e -> new UserProfile(Session.userId));
+        btnUserProfile.addActionListener(e -> new User(Session.userId));
 
         // Panel κουμπιών
         JPanel bottomPanel = new JPanel();
