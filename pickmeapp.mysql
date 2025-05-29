@@ -29,13 +29,22 @@ CREATE TABLE passengers (
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
 );
 
-CREATE TABLE vehicles (
+CREATE TABLE vehicle (
     id INT AUTO_INCREMENT PRIMARY KEY,
-    license_plate VARCHAR(20) UNIQUE NOT NULL,
-    model VARCHAR(100),
-    capacity INT,
-    driver_id VARCHAR(36),
-    FOREIGN KEY (driver_id) REFERENCES drivers(user_id) ON DELETE SET NULL
+    driver_id INT NOT NULL,
+    vehicle_id VARCHAR(50),
+    model VARCHAR(50),
+    brand VARCHAR(50),
+    color VARCHAR(30),
+    manufacture_year INT,
+    license_plate VARCHAR(20),
+    fuel_type VARCHAR(30),
+    total_seats INT,
+    available_seats INT,
+    insurance BOOLEAN,
+    ac BOOLEAN,
+    smoking_allowed BOOLEAN,
+    FOREIGN KEY (driver_id) REFERENCES users(id)
 );
 
 CREATE TABLE routes (
