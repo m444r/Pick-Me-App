@@ -11,6 +11,8 @@ CREATE TABLE ride_requests (
     passenger_id INT NOT NULL,
     driver_id INT NOT NULL,
     route_id INT NOT NULL,
+    driver_completed BOOLEAN DEFAULT FALSE,
+    passenger_completed BOOLEAN DEFAULT FALSE,
     status ENUM('PENDING', 'ACCEPTED', 'REJECTED', 'COMPLETED') DEFAULT 'PENDING',
     timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (passenger_id) REFERENCES users(id),
