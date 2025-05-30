@@ -50,33 +50,31 @@ public class PassengerHome extends javax.swing.JFrame {
     
     
 
-    // Παίρνουμε τα υπάρχοντα components από το contentPane
     Container oldContent = getContentPane();
     Component[] oldComponents = oldContent.getComponents();
 
-    // Δημιουργούμε νέο panel με BorderLayout
+
     JPanel wrapperPanel = new JPanel(new BorderLayout());
 
-    // Δημιουργούμε panel CENTER για να βάλουμε το NetBeans GUI layout
+ 
     JPanel centerPanel = new JPanel();
     centerPanel.setLayout(new GroupLayout(centerPanel));
     for (Component comp : oldComponents) {
         centerPanel.add(comp);
     }
 
-    // Αφαιρούμε τα παλιά και ορίζουμε το wrapper ως νέο content pane
     oldContent.removeAll();
     wrapperPanel.add(centerPanel, BorderLayout.CENTER);
-  //  wrapperPanel.add(scrollPane, BorderLayout.EAST);
+
     setContentPane(wrapperPanel);
 
-    // υπόλοιπος κώδικας όπως setTitle(), setSize() κλπ.
+
     setTitle("Passenger Home");
-    setSize(366, 700); // μεγαλώστε το παράθυρο για να χωράει το panel δεξιά
+    setSize(366, 700); 
     setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
     setLocationRelativeTo(null);
 
-    // αρχικοποίηση εικονιδίων, κλπ...
+
     carIcon = new ImageIcon(getClass().getResource("/pickmeapp/icons/car.png"));
     maleIcon = new ImageIcon(getClass().getResource("/pickmeapp/icons/male.png"));
 
@@ -96,15 +94,13 @@ public class PassengerHome extends javax.swing.JFrame {
     jToggleButton2.setIcon(maleIcon);
     
     
-    // Αρχικοποίηση του requestListPanel (για να μπει scrollable λίστα)
 requestListPanel = new JPanel();
 requestListPanel.setLayout(new BoxLayout(requestListPanel, BoxLayout.Y_AXIS));
 
-// Βάλε το scrollpane γύρω του
-JScrollPane scrollPane = new JScrollPane(requestListPanel);
-scrollPane.setPreferredSize(new Dimension(300, 150)); // Ή όσο θέλεις
 
-// Καθάρισε και βάλε το scrollPane στο GUI placeholder panel
+JScrollPane scrollPane = new JScrollPane(requestListPanel);
+scrollPane.setPreferredSize(new Dimension(300, 150)); 
+
 jPanel1.removeAll();
 jPanel1.setLayout(new BorderLayout());
 jPanel1.add(scrollPane, BorderLayout.CENTER);
@@ -150,16 +146,16 @@ jPanel1.repaint();
             }
         });
 
-        jButton2.setIcon(new javax.swing.ImageIcon(getClass().getResource("/pickmeapp/icons/heart-938313_640.png"))); // NOI18N
+        jButton2.setIcon(new javax.swing.ImageIcon(getClass().getResource("/pickmeapp/icons/heart-938313_640.png"))); 
         jButton2.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 jButton2ActionPerformed(evt);
             }
         });
 
-        jButton3.setIcon(new javax.swing.ImageIcon(getClass().getResource("/pickmeapp/icons/images.png"))); // NOI18N
+        jButton3.setIcon(new javax.swing.ImageIcon(getClass().getResource("/pickmeapp/icons/images.png"))); 
 
-        jButton4.setIcon(new javax.swing.ImageIcon(getClass().getResource("/pickmeapp/icons/gray-user-profile-icon-png-fP8Q1P.png"))); // NOI18N
+        jButton4.setIcon(new javax.swing.ImageIcon(getClass().getResource("/pickmeapp/icons/gray-user-profile-icon-png-fP8Q1P.png"))); 
         jButton4.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 jButton4ActionPerformed(evt);
@@ -173,11 +169,11 @@ jPanel1.repaint();
             }
         });
 
-        jLabel3.setFont(new java.awt.Font("Segoe Script", 0, 36)); // NOI18N
+        jLabel3.setFont(new java.awt.Font("Segoe Script", 0, 36)); 
         jLabel3.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
         jLabel3.setText("HOME");
 
-        jButton6.setIcon(new javax.swing.ImageIcon(getClass().getResource("/pickmeapp/icons/notifications-1.png"))); // NOI18N
+        jButton6.setIcon(new javax.swing.ImageIcon(getClass().getResource("/pickmeapp/icons/notifications-1.png"))); 
         jButton6.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 jButton6ActionPerformed(evt);
@@ -363,7 +359,7 @@ jPanel1.repaint();
         return;
     }
     Route.EndofRoute(currentRideId);
-    // Εμφάνιση παραθύρου αξιολόγησης
+    
     String[] options = {"0", "1", "2", "3", "4", "5"};
     String ratingStr = (String) JOptionPane.showInputDialog(
         this,
