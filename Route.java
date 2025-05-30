@@ -1,5 +1,5 @@
 
-package pickmeapp;
+package com.pickme.pickmeapp;
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
@@ -31,53 +31,83 @@ public class Route {
     private boolean active;
     private static List<PassengerHome> passengers;
     private static ArrayList<String> routeHistory;
-    // Constructor
-    public Route(Location startLocation, Location endLocation, LocalDateTime departureTime, float costPerPassenger, DriverHome driver) {
-        this.startLocation = startLocation;
-        this.endLocation = endLocation;
-        this.departureTime = departureTime;
-        this.costPerPassenger = costPerPassenger;
-        this.driver = driver;
-        this.estimatedArrival = calculateETA();
-        this.passengers = new ArrayList<>();
-        this.active = true;
-        this.id = generateId();
-    }
-
-    private String generateId() {
-        return "ROUTE-" + System.currentTimeMillis();
-    }
-
-    private LocalDateTime calculateETA() {
-        // Απλά +1 ώρα για παράδειγμα (μπορούμε να βάλουμε απόσταση)
-        return departureTime.plusHours(1);
-    }
-
-    public boolean isActive() {
-        return active;
-    }
-
-    public boolean includes(Location loc) {
-        // Αν ταιριάζει περίπου με start ή end
-        return startLocation.isCloseTo(loc) || endLocation.isCloseTo(loc);
-    }
-
-    public boolean isMatchingRoute(Location start, Location end) {
-        return includes(start) && includes(end);
-    }
-
-    public void addPassenger(PassengerHome p) {
-        passengers.add(p);
-    }
-
-    public int getTotalPassengers() {
-        return passengers.size();
-    }
     
-    public static void createNewRoute() {
+    
+
+    private int availableSeats;
+
+    public void setAvailableSeats(int seats) {
+        if (seats >= 0) {
+            this.availableSeats = seats;
+        } else {
+            throw new IllegalArgumentException("Ο αριθμός των διαθέσιμων θέσεων δεν μπορεί να είναι αρνητικός.");
+        }
+    }
+
+    public int getAvailableSeats() {
+        return availableSeats;
+    }
+
+    public boolean isSeatAvailable() {
+        return availableSeats > 0;
+    }
+
+    public void reserveSeat() {
+        if (availableSeats > 0) {
+            availableSeats--;
+        } else {
+            throw new IllegalStateException("Δεν υπάρχουν διαθέσιμες θέσεις.");
+        }
+    }
+
+
+        public Route(Location startLocation, Location endLocation, LocalDateTime departureTime, float costPerPassenger, DriverHome driver) {
+            this.startLocation = startLocation;
+            this.endLocation = endLocation;
+            this.departureTime = departureTime;
+            this.costPerPassenger = costPerPassenger;
+            this.driver = driver;
+            this.estimatedArrival = calculateETA();
+            this.passengers = new ArrayList<>();
+            this.active = true;
+            this.id = generateId();
+        }
+
+        private String generateId() {
+            return "ROUTE-" + System.currentTimeMillis();
+        }
+
+        private LocalDateTime calculateETA() {
+            // Απλά +1 ώρα για παράδειγμα (μπορούμε να βάλουμε απόσταση)
+            return departureTime.plusHours(1);
+        }
+
+        public boolean isActive() {
+            return active;
+        }
+
+        public boolean includes(Location loc) {
+            // Αν ταιριάζει περίπου με start ή end
+            return startLocation.isCloseTo(loc) || endLocation.isCloseTo(loc);
+        }
+
+        public boolean isMatchingRoute(Location start, Location end) {
+            return includes(start) && includes(end);
+        }
+
+        public void addPassenger(PassengerHome p) {
+            passengers.add(p);
+        }
+
+        public int getTotalPassengers() {
+            return passengers.size();
+        }
+
+        public void createNewRoute(DriverHome driver, List<Route> driverRoutes) {
     JCheckBox useCurrentLocationCheckbox = new JCheckBox("Χρήση τρέχουσας τοποθεσίας");
     JTextField txtStart = new JTextField();
     JTextField txtEnd = new JTextField();
+    JTextField seatsField = new JTextField(); // Πεδίο για διαθέσιμες θέσεις
     JButton btnShowHistory = new JButton("Ιστορικό Διαδρομών");
     btnShowHistory.addActionListener(e -> showRouteHistory());
 
@@ -87,38 +117,38 @@ public class Route {
     panel.add(useCurrentLocationCheckbox);
     panel.add(new JLabel("Προορισμός:"));
     panel.add(txtEnd);
+    panel.add(new JLabel("Διαθέσιμες Θέσεις:"));
+    panel.add(seatsField);
     panel.add(btnShowHistory);
 
-    int result = JOptionPane.showConfirmDialog(null, panel, "Δημιουργία Διαδρομής", JOptionPane.OK_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE);
+    int result = JOptionPane.showConfirmDialog(null, panel, "Δημιουργία Διαδρομής",
+            JOptionPane.OK_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE);
 
     if (result == JOptionPane.OK_OPTION) {
-        String startStr = useCurrentLocationCheckbox.isSelected() ? getApproximateLocationFromIP() : txtStart.getText();
-        String endStr = txtEnd.getText();
+        String startStr = useCurrentLocationCheckbox.isSelected() ? getApproximateLocationFromIP() : txtStart.getText().trim();
+        String endStr = txtEnd.getText().trim();
+        String seatsStr = seatsField.getText().trim();
 
-        String sql;
-        if ("DRIVER".equalsIgnoreCase(Session.pickMode)) {
-            sql = "INSERT INTO ride_requests (driver_id, pickup_address , address, timestamp) VALUES (?, ?, ?, NOW())";
-        } else {
-            sql = "INSERT INTO ride_requests (passenger_id, pickup_address , address, timestamp) VALUES (?, ?, ?, NOW())";
+        if (startStr.isEmpty() || endStr.isEmpty() || seatsStr.isEmpty()) {
+            JOptionPane.showMessageDialog(null, "Συμπλήρωσε όλα τα πεδία.");
+            return;
         }
 
-        try (Connection conn = DriverManager.getConnection("jdbc:mysql://localhost:3306/pickmeapp", "root", "password");
-             PreparedStatement stmt = conn.prepareStatement(sql)) {
+        int seats = Integer.parseInt(seatsStr);
 
-            stmt.setInt(1, Session.userId);
-            stmt.setString(2, startStr);
-            stmt.setString(3, endStr);
-            stmt.executeUpdate();
+        Location startLocation = new Location(startStr);
+        Location endLocation = new Location(endStr);
+        LocalDateTime departureTime = LocalDateTime.now().plusMinutes(10);
+        float costPerPassenger = 3.0f; // default κόστος
 
-            JOptionPane.showMessageDialog(null,
-                "✅ Διαδρομή αποθηκεύτηκε:\nΑπό: " + startStr + "\nΠρος: " + endStr);
+        Route route = new Route(startLocation, endLocation, departureTime, costPerPassenger, driver);
+        route.setAvailableSeats(seats);
+        driverRoutes.add(route);
 
-        } catch (SQLException e) {
-            e.printStackTrace();
-            JOptionPane.showMessageDialog(null, "❌ Σφάλμα αποθήκευσης διαδρομής: " + e.getMessage());
-        }
+        JOptionPane.showMessageDialog(null, "✅ Διαδρομή δημιουργήθηκε!");
     }
 }
+
 
     
    private static void showRouteHistory() {
