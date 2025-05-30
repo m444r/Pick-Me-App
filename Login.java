@@ -14,7 +14,7 @@ public class Login {
         frame.add(panel);
         placeComponents(panel, frame);
 
-        frame.setLocationRelativeTo(null); // Κέντρο οθόνης
+        frame.setLocationRelativeTo(null); 
         frame.setVisible(true);
     }
 
@@ -46,9 +46,9 @@ public class Login {
             String password = new String(passText.getPassword());
 
             if (authenticateUser(email, password)) {
-                frame.dispose(); // Κλείνει το login παράθυρο
+                frame.dispose(); 
 
-                // Διάβασε το pickMode από το Session και άνοιξε το αντίστοιχο Home
+               
                 if (Session.pickMode.equalsIgnoreCase("DRIVER")) {
                     new DriverHome().setVisible(true);
                 } else {
@@ -78,7 +78,7 @@ public class Login {
             ResultSet rs = stmt.executeQuery();
 
             if (rs.next()) {
-                // Βρέθηκε ο χρήστης
+              
                 int userId = rs.getInt("id");
                 String pickMode = rs.getString("pickMode");
 
