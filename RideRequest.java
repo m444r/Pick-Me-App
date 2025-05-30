@@ -1,5 +1,4 @@
-//σε αυτη την κλαση προσθετουμε το api key μας και συγκρινει τισ διαδρομες driver,passanger 
-//αν οι διαδρομες ειναι συμβατεσ προσθετει στην διαδρομη του επιβατη το συμβατο driverid 
+
 
 package pickmeapp;
 
@@ -7,7 +6,7 @@ import java.sql.*;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
-//import org.json.*;
+
 import java.net.*;
 import java.io.*;
 import java.util.*;
@@ -37,16 +36,16 @@ public class RideRequest {
              * Math.sin(lonDistance / 2) * Math.sin(lonDistance / 2);
 
     double c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-    double distance = R * c; // απόσταση σε χιλιόμετρα
+    double distance = R * c; 
 
-    return distance; // π.χ. 0.3 σημαίνει 300 μέτρα
+    return distance; 
 }
 
   public static boolean isPassengerRouteInsideDriverRoute(List<LatLng> passengerRoute, List<LatLng> driverRoute) {
     for (LatLng passengerPoint : passengerRoute) {
         boolean closeToDriver = false;
         for (LatLng driverPoint : driverRoute) {
-            if (distanceBetween(passengerPoint, driverPoint) < 0.3) { // κάτω από 300 μέτρα
+            if (distanceBetween(passengerPoint, driverPoint) < 0.3) { 
                 closeToDriver = true;
                 break;
             }
@@ -103,18 +102,18 @@ public class RideRequest {
 }
 public static void checkPassengerMatchesDriver() {
     try (Connection conn = DriverManager.getConnection("jdbc:mysql://localhost:3306/pickmeapp", "root", "password")) {
-        // 1. Φέρνουμε όλες τις ενεργές διαδρομές οδηγών
+       
         String driverSql = "SELECT id, pickup_address, address FROM ride_requests WHERE driver_id IS NOT NULL AND status = 'PENDING'";
         PreparedStatement driverStmt = conn.prepareStatement(driverSql);
         ResultSet driverRs = driverStmt.executeQuery();
 
-        // 2. Για κάθε οδηγό
+        
         while (driverRs.next()) {
             int driverRequestId = driverRs.getInt("id");
             String driverStart = driverRs.getString("pickup_address");
             String driverEnd = driverRs.getString("address");
 
-            // 3. Φέρνουμε επιβάτες με status 'PENDING'
+            
             String passengerSql = "SELECT id, pickup_address, address FROM ride_requests WHERE passenger_id IS NOT NULL AND status = 'PENDING'";
             PreparedStatement passengerStmt = conn.prepareStatement(passengerSql);
             ResultSet passengerRs = passengerStmt.executeQuery();
@@ -124,12 +123,12 @@ public static void checkPassengerMatchesDriver() {
                 String passengerStart = passengerRs.getString("pickup_address");
                 String passengerEnd = passengerRs.getString("address");
 
-                // --- 🔄 Εδώ κάνεις το real-time check με Google Maps API ---
+                
                 boolean match = isPassengerRouteInsideDriverRoute(driverStart, driverEnd, passengerStart, passengerEnd);
 
                 if (match) {
                     System.out.println("✔️ Βρέθηκε match: Driver #" + driverRequestId + " με Passenger #" + passengerRequestId);
-                    DriverHome.loadRideRequests(); // ή κάποια πιο ειδική παραλλαγή της
+                    DriverHome.loadRideRequests(); 
                 }
             }
         }
@@ -156,7 +155,7 @@ public static void assignMatchingRequestsToDriver(int driverId, String driverSta
             List<LatLng> passengerRoute = getRouteCoordinates(pickup, dropoff, apiKey);
 
             if (isPassengerRouteInsideDriverRoute(passengerRoute, driverRoute)) {
-                // Assign the request to this driver
+               
                 assignRequestToDriver(requestId, driverId);
             }
         }
@@ -179,7 +178,7 @@ public static void assignRequestToDriver(int rideRequestId, int driverId) {
 
         if (updated > 0) {
             System.out.println("✅ Η διαδρομή ανατέθηκε στον οδηγό.");
-            DriverHome.loadRideRequests(); // Εμφανίζει το νέο αίτημα στον οδηγό
+            DriverHome.loadRideRequests();
         } else {
             System.out.println("⚠️ Δεν βρέθηκε διαδρομή για ανάθεση.");
         }
