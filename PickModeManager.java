@@ -47,7 +47,7 @@ public class PickModeManager {
             JOptionPane.showMessageDialog(null, "Σφάλμα κατά τη φόρτωση pickMode: " + e.getMessage());
         }
 
-        return "PASSENGER"; // Προεπιλογή
+        return "PASSENGER"; 
     }
     
     public static void togglePickMode(JFrame currentFrame) {
