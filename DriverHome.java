@@ -11,8 +11,8 @@ import javax.swing.JPanel;
 import javax.swing.BorderFactory;
 import javax.swing.JOptionPane;
 import java.awt.GridLayout;
-import java.awt.event.ActionListener; // αν χρησιμοποιείς ActionListener
-import java.sql.*; // αν κάνεις χρήση βάσης δεδομένων
+import java.awt.event.ActionListener; 
+import java.sql.*; 
 import javax.swing.JFrame;
 import javax.swing.SwingConstants;
 import java.util.Map;
