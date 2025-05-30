@@ -1,4 +1,4 @@
-package com.pickme.pickmeapp;
+package pickmeapp;
 
 public class Location {
     private String name;
