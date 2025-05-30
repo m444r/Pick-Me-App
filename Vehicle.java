@@ -47,7 +47,7 @@ public class Vehicle {
     public boolean hasAC() { return AC; }
     public boolean isSmokingAllowed() { return isSmokingAllowed; }
 
-    // Φέρνει το όχημα του οδηγού
+    
     public static Vehicle fetchForDriver(int driverId) {
         try (Connection conn = DriverManager.getConnection("jdbc:mysql://localhost:3306/pickmeapp", "root", "password");
              PreparedStatement stmt = conn.prepareStatement("SELECT * FROM vehicle WHERE driver_id = ?")) {
