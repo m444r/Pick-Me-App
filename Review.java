@@ -2,7 +2,7 @@
 package pickmeapp;
 
 import javax.swing.JOptionPane;
-import java.sql.*; // αν κάνεις χρήση βάσης δεδομένων
+import java.sql.*; 
 
 public class Review {
     
@@ -11,7 +11,7 @@ public class Review {
 
     try (Connection conn = DriverManager.getConnection("jdbc:mysql://localhost:3306/pickmeapp", "root", "password")) {
 
-        // 🔁 Εντοπίζουμε ποιον θα βαθμολογήσει (αν ο τρέχων είναι οδηγός => βαθμολογεί επιβάτη, αλλιώς το αντίθετο)
+   
         String query;
         if (Session.pickMode.equalsIgnoreCase("driver")) {
             query = "SELECT passenger_id FROM ride_requests WHERE id = ?";
@@ -28,7 +28,7 @@ public class Review {
             }
         }
 
-        // Αποθήκευση αξιολόγησης
+      
         if (ratedId != -1) {
             try (PreparedStatement stmt = conn.prepareStatement(sql)) {
                 stmt.setInt(1, rideId);
@@ -59,7 +59,7 @@ public static double getAverageRatingForUser(int userId) {
     } catch (SQLException e) {
         e.printStackTrace();
     }
-    return 0.0; // Αν δεν υπάρχει βαθμολογία
+    return 0.0; 
 }
 
     
