@@ -49,7 +49,7 @@ public class Route {
     }
 
     private LocalDateTime calculateETA() {
-        // Απλά +1 ώρα για παράδειγμα (μπορούμε να βάλουμε απόσταση)
+        
         return departureTime.plusHours(1);
     }
 
@@ -58,7 +58,7 @@ public class Route {
     }
 
     public boolean includes(Location loc) {
-        // Αν ταιριάζει περίπου με start ή end
+       
         return startLocation.isCloseTo(loc) || endLocation.isCloseTo(loc);
     }
 
@@ -87,13 +87,13 @@ public class Route {
 
     try (Connection conn = DriverManager.getConnection("jdbc:mysql://localhost:3306/pickmeapp", "root", "password")) {
 
-        // Πρώτο update: μαρκάρει ποιος ολοκλήρωσε
+       
         try (PreparedStatement stmt = conn.prepareStatement(updateSql)) {
             stmt.setInt(1, rideRequestId);
             stmt.executeUpdate();
         }
 
-        // Έλεγχος αν και οι δύο έχουν ολοκληρώσει
+     
         boolean driverDone = false;
         boolean passengerDone = false;
 
@@ -106,7 +106,7 @@ public class Route {
             }
         }
 
-        // Αν και οι δύο έχουν τελειώσει, κάνουμε πλήρη ολοκλήρωση
+  
         if (driverDone && passengerDone) {
             try (PreparedStatement stmt = conn.prepareStatement(completeSql)) {
                 stmt.setInt(1, rideRequestId);
@@ -142,17 +142,17 @@ public class Route {
     panel.add(new JLabel("Προορισμός:"));
     panel.add(txtEnd);
     panel.add(btnShowHistory);
-    panel.add(btnAddFavorite);  // Προσθέτουμε το κουμπί στο panel
+    panel.add(btnAddFavorite);  
 
-    // Αρχικά το αποτέλεσμα null, θα το ορίσουμε χειροκίνητα παρακάτω
+   
     final int[] dialogResult = {JOptionPane.CANCEL_OPTION};
 
-    // Δημιουργούμε το JOptionPane για να έχουμε πρόσβαση στο αποτέλεσμα
+    
     JOptionPane optionPane = new JOptionPane(panel, JOptionPane.PLAIN_MESSAGE, JOptionPane.OK_CANCEL_OPTION);
 
     JDialog dialog = optionPane.createDialog("Δημιουργία Διαδρομής");
 
-    // Listener για το κουμπί "Προσθήκη στα Αγαπημένα"
+   
     btnAddFavorite.addActionListener(e -> {
         String startStr = useCurrentLocationCheckbox.isSelected() ? getApproximateLocationFromIP() : txtStart.getText().trim();
         String endStr = txtEnd.getText().trim();
@@ -170,7 +170,7 @@ public class Route {
 
     dialog.setVisible(true);
 
-    // Παίρνουμε το αποτέλεσμα επιλογής (OK ή Cancel)
+
     Object value = optionPane.getValue();
     dialogResult[0] = (value instanceof Integer) ? (Integer) value : JOptionPane.CLOSED_OPTION;
 
@@ -310,7 +310,7 @@ public static void weFoundDriver(int passengerId) {
             String pickup = rs.getString("pickup_address");
             String destination = rs.getString("address");
 
-            // Χρήση της getAverageRatingForUser
+      
             double avgRating = Review.getAverageRatingForUser(driverId);
 
             String message = "🚗 Ο οδηγός σας είναι έτοιμος!\n\n" +
@@ -361,9 +361,9 @@ public static void weFoundDriver(int passengerId) {
         con.disconnect();
 
         String json = content.toString();
-        System.out.println("🔎 JSON Απόκριση: " + json); // Εκτύπωσε το για έλεγχο
+        System.out.println("🔎 JSON Απόκριση: " + json); 
 
-        // Εξαγωγή πεδίων με ασφαλή τρόπο
+      
         if (json.contains("\"city\":\"") && json.contains("\"country_name\":\"")) {
             String city = json.split("\"city\":\"")[1].split("\"")[0];
             String country = json.split("\"country_name\":\"")[1].split("\"")[0];
