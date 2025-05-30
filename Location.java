@@ -13,7 +13,7 @@ public class Location {
 
     public boolean isCloseTo(Location other) {
         float dist = Math.abs(this.latitude - other.latitude) + Math.abs(this.longitude - other.longitude);
-        return dist < 0.05f; // π.χ. κάτω από 50 μέτρα
+        return dist < 0.05f; 
     }
 
     public String getName() {
