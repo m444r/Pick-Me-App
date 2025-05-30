@@ -62,11 +62,13 @@ CREATE TABLE payments (
 
 CREATE TABLE ratings (
     id INT PRIMARY KEY AUTO_INCREMENT,
-    ride_request_id INT,
-    user_id INT,
-    rating INT,
+    ride_request_id INT NOT NULL,
+    rater_id INT NOT NULL,
+    rated_id INT NOT NULL,
+    rating INT NOT NULL CHECK (rating BETWEEN 0 AND 5),
     FOREIGN KEY (ride_request_id) REFERENCES ride_requests(id),
-    FOREIGN KEY (user_id) REFERENCES users(id)
+    FOREIGN KEY (rater_id) REFERENCES users(id),
+    FOREIGN KEY (rated_id) REFERENCES users(id)
 );
 
 
