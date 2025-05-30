@@ -135,6 +135,7 @@ public class DriverHome extends javax.swing.JFrame {
         jButton1 = new javax.swing.JButton();
         jLabel3 = new javax.swing.JLabel();
         jButton6 = new javax.swing.JButton();
+        jButton7 = new javax.swing.JButton();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
 
@@ -190,6 +191,13 @@ public class DriverHome extends javax.swing.JFrame {
             }
         });
 
+        jButton7.setText("Τέλος Διαδρομής");
+        jButton7.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButton7ActionPerformed(evt);
+            }
+        });
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
@@ -204,9 +212,16 @@ public class DriverHome extends javax.swing.JFrame {
                         .addComponent(jButton3)
                         .addGap(0, 0, 0)
                         .addComponent(jButton4))
-                    .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                        .addComponent(jLabel3, javax.swing.GroupLayout.PREFERRED_SIZE, 141, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addComponent(jButton1)))
+                    .addGroup(layout.createSequentialGroup()
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addGroup(layout.createSequentialGroup()
+                                .addGap(14, 14, 14)
+                                .addComponent(jLabel3, javax.swing.GroupLayout.PREFERRED_SIZE, 141, javax.swing.GroupLayout.PREFERRED_SIZE))
+                            .addGroup(layout.createSequentialGroup()
+                                .addContainerGap()
+                                .addComponent(jButton1, javax.swing.GroupLayout.PREFERRED_SIZE, 155, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(jButton7)))
                 .addGap(0, 0, Short.MAX_VALUE))
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
@@ -225,7 +240,9 @@ public class DriverHome extends javax.swing.JFrame {
                     .addComponent(jButton6, javax.swing.GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE)
                     .addComponent(jToggleButton2, javax.swing.GroupLayout.DEFAULT_SIZE, 41, Short.MAX_VALUE))
                 .addGap(385, 385, 385)
-                .addComponent(jButton1)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(jButton1)
+                    .addComponent(jButton7))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
                     .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -240,7 +257,7 @@ public class DriverHome extends javax.swing.JFrame {
     }// </editor-fold>//GEN-END:initComponents
 
     private void jButton2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton2ActionPerformed
-     
+/*     
      java.util.List<String> favoriteRoutes = Favorites.fetchFavoriteRoutesFromDB(Session.userId);
 
     if (favoriteRoutes.isEmpty()) {
@@ -281,7 +298,9 @@ public class DriverHome extends javax.swing.JFrame {
     JScrollPane scrollPane = new JScrollPane(panel);
     scrollPane.setPreferredSize(new Dimension(400, 300));
 
-    JOptionPane.showMessageDialog(this, scrollPane, "📌 Αγαπημένες Διαδρομές", JOptionPane.PLAIN_MESSAGE);
+    JOptionPane.showMessageDialog(this, scrollPane, "📌 Αγαπημένες Διαδρομές", JOptionPane.PLAIN_MESSAGE);*/
+    Favorites.showFavorites(Session.userId);
+
     }//GEN-LAST:event_jButton2ActionPerformed
 
     private void jButton3ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton3ActionPerformed
@@ -323,6 +342,32 @@ public class DriverHome extends javax.swing.JFrame {
     loadRideRequests();
     }//GEN-LAST:event_jButton6ActionPerformed
 
+    private void jButton7ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton7ActionPerformed
+  int currentRideId = Route.getAcceptedRideRequestId(Session.userId);
+    if (currentRideId == -1) {
+        JOptionPane.showMessageDialog(this, "❌ Δεν υπάρχει ενεργή διαδρομή.");
+        return;
+    }
+    Route.EndofRoute(currentRideId);
+    // Εμφάνιση παραθύρου αξιολόγησης
+    String[] options = {"0", "1", "2", "3", "4", "5"};
+    String ratingStr = (String) JOptionPane.showInputDialog(
+        this,
+        "Βαθμολόγησε τον/την συνοδοιπόρο σου (0-5):",
+        "Αξιολόγηση",
+        JOptionPane.PLAIN_MESSAGE,
+        null,
+        options,
+        "5"
+    );
+
+    if (ratingStr != null) {
+        int rating = Integer.parseInt(ratingStr);
+        Review.saveRating(Session.userId, currentRideId, rating);
+        JOptionPane.showMessageDialog(this, "✅ Η αξιολόγηση καταχωρήθηκε!");
+    }
+    }//GEN-LAST:event_jButton7ActionPerformed
+
     /**
      * @param args the command line arguments
      */
@@ -354,8 +399,11 @@ public class DriverHome extends javax.swing.JFrame {
 }*/
 
     
-   private void loadRideRequests() {
-    String sql = "SELECT rr.id, u.name AS passenger_name, rr.address, rr.pickup_address " +
+
+
+    
+public static void loadRideRequests() {
+    String sql = "SELECT rr.id, u.id AS passenger_id, u.name AS passenger_name, rr.address, rr.pickup_address " +
                  "FROM ride_requests rr " +
                  "JOIN users u ON rr.passenger_id = u.id " +
                  "WHERE rr.driver_id = ? AND rr.status = 'PENDING'";
@@ -366,7 +414,6 @@ public class DriverHome extends javax.swing.JFrame {
         stmt.setInt(1, Session.userId);
         ResultSet rs = stmt.executeQuery();
 
-        // Δημιουργία νέου παραθύρου
         JFrame requestsFrame = new JFrame("Εκκρεμή Αιτήματα Διαδρομών");
         requestsFrame.setSize(500, 600);
         requestsFrame.setLocationRelativeTo(null);
@@ -377,14 +424,18 @@ public class DriverHome extends javax.swing.JFrame {
 
         while (rs.next()) {
             int requestId = rs.getInt("id");
+            int passengerId = rs.getInt("passenger_id");
             String passengerName = rs.getString("passenger_name");
             String address = rs.getString("address");
             String pickupAddress = rs.getString("pickup_address");
+
+            double avgRating = Review.getAverageRatingForUser(passengerId);
 
             JPanel requestCard = new JPanel();
             requestCard.setBorder(BorderFactory.createTitledBorder("Αίτημα"));
             requestCard.setLayout(new GridLayout(0, 1));
             requestCard.add(new JLabel("🧍 Επιβάτης: " + passengerName));
+            requestCard.add(new JLabel("⭐ Μέσος Όρος Αξιολόγησης: " + (avgRating > 0 ? String.format("%.2f", avgRating) : "Δεν υπάρχουν αξιολογήσεις")));
             requestCard.add(new JLabel("📍 Διεύθυνση: " + address));
             requestCard.add(new JLabel("🚗 Επιβίβαση από: " + pickupAddress));
 
@@ -393,12 +444,12 @@ public class DriverHome extends javax.swing.JFrame {
 
             acceptBtn.addActionListener(e -> {
                 updateRequestStatus(requestId, "ACCEPTED");
-                requestsFrame.dispose(); // Κλείνει το παράθυρο αφού γίνει αποδοχή
+                requestsFrame.dispose();
             });
 
             rejectBtn.addActionListener(e -> {
                 updateRequestStatus(requestId, "REJECTED");
-                requestsFrame.dispose(); // Κλείνει το παράθυρο αφού γίνει απόρριψη
+                requestsFrame.dispose();
             });
 
             JPanel buttonPanel = new JPanel();
@@ -421,7 +472,7 @@ public class DriverHome extends javax.swing.JFrame {
 
 
     
-     private void updateRequestStatus(int requestId, String status) {
+     private static void updateRequestStatus(int requestId, String status) {
         String sql = "UPDATE ride_requests SET status = ? WHERE id = ?";
 
         try (Connection conn = DriverManager.getConnection("jdbc:mysql://localhost:3306/pickmeapp", "root", "password");
@@ -431,8 +482,8 @@ public class DriverHome extends javax.swing.JFrame {
             stmt.setInt(2, requestId);
             stmt.executeUpdate();
 
-            JOptionPane.showMessageDialog(this, "Η κατάσταση ενημερώθηκε.");
-            loadRideRequests();
+         JOptionPane.showMessageDialog(null, "Η κατάσταση ενημερώθκε. "); 
+         loadRideRequests();
 
         } catch (SQLException e) {
             e.printStackTrace();
@@ -486,6 +537,7 @@ public class DriverHome extends javax.swing.JFrame {
     private javax.swing.JButton jButton4;
     private javax.swing.JButton jButton5;
     private javax.swing.JButton jButton6;
+    private javax.swing.JButton jButton7;
     private javax.swing.JLabel jLabel3;
     private javax.swing.JToggleButton jToggleButton2;
     // End of variables declaration//GEN-END:variables

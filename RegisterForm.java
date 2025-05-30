@@ -5,14 +5,19 @@ import java.sql.*;
 
 public class RegisterForm {
 
+    
     public static void main(String[] args) {
+        
         showForm();
+        
     }
 
     public static void showForm() {
         JFrame frame = new JFrame("Register");
         frame.setSize(350, 300);
         frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+         frame.setLocationRelativeTo(null); // Κέντρο οθόνης
+        frame.setVisible(true);
         JPanel panel = new JPanel();
         frame.add(panel);
         placeComponents(panel);

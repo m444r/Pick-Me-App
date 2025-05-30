@@ -133,6 +133,7 @@ jPanel1.repaint();
         jLabel3 = new javax.swing.JLabel();
         jButton6 = new javax.swing.JButton();
         jPanel1 = new javax.swing.JPanel();
+        jButton7 = new javax.swing.JButton();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
 
@@ -204,6 +205,13 @@ jPanel1.repaint();
             .addGap(0, 119, Short.MAX_VALUE)
         );
 
+        jButton7.setText("Τέλος Διαδρομής");
+        jButton7.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButton7ActionPerformed(evt);
+            }
+        });
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
@@ -216,9 +224,7 @@ jPanel1.repaint();
                         .addComponent(jButton2)
                         .addGap(0, 0, 0)
                         .addComponent(jButton3))
-                    .addGroup(layout.createSequentialGroup()
-                        .addComponent(jToggleButton2, javax.swing.GroupLayout.PREFERRED_SIZE, 54, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addGap(121, 121, 121)))
+                    .addComponent(jToggleButton2, javax.swing.GroupLayout.PREFERRED_SIZE, 54, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(jButton6)
                     .addComponent(jButton4))
@@ -230,11 +236,13 @@ jPanel1.repaint();
                         .addComponent(jLabel3, javax.swing.GroupLayout.PREFERRED_SIZE, 152, javax.swing.GroupLayout.PREFERRED_SIZE))
                     .addGroup(layout.createSequentialGroup()
                         .addContainerGap()
-                        .addComponent(jButton5))
+                        .addComponent(jButton5, javax.swing.GroupLayout.PREFERRED_SIZE, 155, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(jButton7))
                     .addGroup(layout.createSequentialGroup()
                         .addContainerGap()
                         .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addContainerGap(97, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -245,11 +253,13 @@ jPanel1.repaint();
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
                     .addComponent(jButton6, javax.swing.GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE)
                     .addComponent(jToggleButton2, javax.swing.GroupLayout.DEFAULT_SIZE, 37, Short.MAX_VALUE))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 252, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 246, Short.MAX_VALUE)
                 .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addGap(18, 18, 18)
-                .addComponent(jButton5)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                    .addComponent(jButton5, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(jButton7, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addGap(12, 12, 12)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(jButton1, javax.swing.GroupLayout.Alignment.TRAILING)
                     .addComponent(jButton2, javax.swing.GroupLayout.Alignment.TRAILING)
@@ -293,7 +303,7 @@ jPanel1.repaint();
     }//GEN-LAST:event_jButton4ActionPerformed
 
     private void jButton2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton2ActionPerformed
-     
+/*     
     List<String> favoriteRoutes = Favorites.fetchFavoriteRoutesFromDB(Session.userId);
 
     if (favoriteRoutes.isEmpty()) {
@@ -334,16 +344,44 @@ jPanel1.repaint();
     JScrollPane scrollPane = new JScrollPane(panel);
     scrollPane.setPreferredSize(new Dimension(400, 300));
 
-    JOptionPane.showMessageDialog(this, scrollPane, "📌 Αγαπημένες Διαδρομές", JOptionPane.PLAIN_MESSAGE);
+    JOptionPane.showMessageDialog(this, scrollPane, "📌 Αγαπημένες Διαδρομές", JOptionPane.PLAIN_MESSAGE);*/
+    Favorites.showFavorites(Session.userId);
     }//GEN-LAST:event_jButton2ActionPerformed
 
     private void jButton6ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton6ActionPerformed
-        // TODO add your handling code here:
+        Route.weFoundDriver(Session.userId);
     }//GEN-LAST:event_jButton6ActionPerformed
 
     private void jPanel1AncestorAdded(javax.swing.event.AncestorEvent evt) {//GEN-FIRST:event_jPanel1AncestorAdded
         // TODO add your handling code here:
     }//GEN-LAST:event_jPanel1AncestorAdded
+
+    private void jButton7ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton7ActionPerformed
+     int currentRideId = Route.getAcceptedRideRequestId(Session.userId);
+    if (currentRideId == -1) {
+        JOptionPane.showMessageDialog(this, "❌ Δεν υπάρχει ενεργή διαδρομή.");
+        return;
+    }
+    Route.EndofRoute(currentRideId);
+    // Εμφάνιση παραθύρου αξιολόγησης
+    String[] options = {"0", "1", "2", "3", "4", "5"};
+    String ratingStr = (String) JOptionPane.showInputDialog(
+        this,
+        "Βαθμολόγησε τον/την συνοδοιπόρο σου (0-5):",
+        "Αξιολόγηση",
+        JOptionPane.PLAIN_MESSAGE,
+        null,
+        options,
+        "5"
+    );
+
+    if (ratingStr != null) {
+        int rating = Integer.parseInt(ratingStr);
+        Review.saveRating(Session.userId, currentRideId, rating);
+        JOptionPane.showMessageDialog(this, "✅ Η αξιολόγηση καταχωρήθηκε!");
+    }
+
+    }//GEN-LAST:event_jButton7ActionPerformed
 
     /**
      * @param args the command line arguments
@@ -533,6 +571,7 @@ jPanel1.repaint();
     private javax.swing.JButton jButton4;
     private javax.swing.JButton jButton5;
     private javax.swing.JButton jButton6;
+    private javax.swing.JButton jButton7;
     private javax.swing.JLabel jLabel3;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JToggleButton jToggleButton2;
