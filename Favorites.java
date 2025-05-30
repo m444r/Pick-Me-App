@@ -106,7 +106,7 @@ public class Favorites {
 
         JButton selectButton = new JButton("Επιλογή Διαδρομής");
 selectButton.addActionListener(e -> {
-   // JOptionPane.showMessageDialog(null, "Επιλέξατε τη διαδρομή:\n" + route);
+  
 
     String sql;
     if ("DRIVER".equalsIgnoreCase(Session.pickMode)) {
@@ -115,9 +115,9 @@ selectButton.addActionListener(e -> {
         sql = "INSERT INTO ride_requests (passenger_id, pickup_address, address, timestamp) VALUES (?, ?, ?, NOW())";
     }
 
-    // Υποθέτουμε ότι το route περιέχει pickup και destination χωρισμένα με " -> "
+   
     String[] addresses = route.split("->");
-    // route = "Από: lala → Προς: mmm"
+    
 if (!route.contains("→")) {
     JOptionPane.showMessageDialog(null, "Η διαδρομή δεν περιέχει έγκυρες διευθύνσεις.");
     return;
