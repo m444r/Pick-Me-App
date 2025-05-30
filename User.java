@@ -14,7 +14,7 @@ public class User extends javax.swing.JFrame {
         loadProfil();
         
         setTitle("Driver Profile");
-        setSize(370, 600);
+        setSize(350, 750);
         setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
         setLocationRelativeTo(null);
 

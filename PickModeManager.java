@@ -47,21 +47,30 @@ public class PickModeManager {
             JOptionPane.showMessageDialog(null, "Σφάλμα κατά τη φόρτωση pickMode: " + e.getMessage());
         }
 
-        return "PASSANGER"; // Προεπιλογή
+        return "PASSENGER"; // Προεπιλογή
     }
     
     public static void togglePickMode(JFrame currentFrame) {
         int userId = Session.userId;
         String currentMode = fetchPickModeFromDB(userId);
         String newMode = currentMode.equalsIgnoreCase("PASSENGER") ? "DRIVER" : "PASSENGER";
+
+        System.out.println("Switching from " + currentMode + " to " + newMode);
+
         updatePickMode(userId, newMode);
+        Session.pickMode = newMode;
 
         currentFrame.dispose();
 
-        if (newMode.equals("PASSENGER")) {
-            new PassengerHome();
+        JFrame nextFrame;
+        if (newMode.equalsIgnoreCase("DRIVER")) {
+            nextFrame = new DriverHome();
         } else {
-            new DriverHome();
+            nextFrame = new PassengerHome();
         }
+
+        nextFrame.setVisible(true);
     }
+
+
 }
