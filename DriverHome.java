@@ -23,10 +23,7 @@ import java.awt.BorderLayout;
 
 
 
-/**
- *
- * @author User
- */
+
 public class DriverHome extends javax.swing.JFrame {
 
     private ImageIcon carIcon;
@@ -34,7 +31,6 @@ public class DriverHome extends javax.swing.JFrame {
      private JPanel requestsPanel;
     private DefaultListModel<String> listModel;
     private JList<String> requestsList;
-    //private jPanel jPane1;  // Panel για τις κάρτες
     private Map<String, Integer> requestIdMap = new HashMap<>();
     
 
@@ -63,7 +59,7 @@ public class DriverHome extends javax.swing.JFrame {
     }
     
     public DriverHome() {
-         initComponents();// Αν έχεις UI από NetBeans Form Editor
+         initComponents();
 
         listModel = new DefaultListModel<>();
         requestsList = new JList<>(listModel);
@@ -139,28 +135,28 @@ public class DriverHome extends javax.swing.JFrame {
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
 
-        jButton2.setIcon(new javax.swing.ImageIcon(getClass().getResource("/pickmeapp/icons/heart-938313_640.png"))); // NOI18N
+        jButton2.setIcon(new javax.swing.ImageIcon(getClass().getResource("/pickmeapp/icons/heart-938313_640.png")));
         jButton2.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 jButton2ActionPerformed(evt);
             }
         });
 
-        jButton3.setIcon(new javax.swing.ImageIcon(getClass().getResource("/pickmeapp/icons/images.png"))); // NOI18N
+        jButton3.setIcon(new javax.swing.ImageIcon(getClass().getResource("/pickmeapp/icons/images.png"))); 
         jButton3.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 jButton3ActionPerformed(evt);
             }
         });
 
-        jButton4.setIcon(new javax.swing.ImageIcon(getClass().getResource("/pickmeapp/icons/gray-user-profile-icon-png-fP8Q1P.png"))); // NOI18N
+        jButton4.setIcon(new javax.swing.ImageIcon(getClass().getResource("/pickmeapp/icons/gray-user-profile-icon-png-fP8Q1P.png"))); 
         jButton4.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 jButton4ActionPerformed(evt);
             }
         });
 
-        jButton5.setIcon(new javax.swing.ImageIcon(getClass().getResource("/pickmeapp/icons/Basic_Elements_(161).png"))); // NOI18N
+        jButton5.setIcon(new javax.swing.ImageIcon(getClass().getResource("/pickmeapp/icons/Basic_Elements_(161).png"))); 
         jButton5.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 jButton5ActionPerformed(evt);
@@ -180,11 +176,11 @@ public class DriverHome extends javax.swing.JFrame {
             }
         });
 
-        jLabel3.setFont(new java.awt.Font("Segoe Script", 0, 36)); // NOI18N
+        jLabel3.setFont(new java.awt.Font("Segoe Script", 0, 36)); 
         jLabel3.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
         jLabel3.setText("HOME");
 
-        jButton6.setIcon(new javax.swing.ImageIcon(getClass().getResource("/pickmeapp/icons/notifications-1.png"))); // NOI18N
+        jButton6.setIcon(new javax.swing.ImageIcon(getClass().getResource("/pickmeapp/icons/notifications-1.png"))); 
         jButton6.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 jButton6ActionPerformed(evt);
@@ -329,12 +325,12 @@ public class DriverHome extends javax.swing.JFrame {
     }//GEN-LAST:event_jButton1ActionPerformed
 
     private void jButton5ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton5ActionPerformed
-         new DriverHome(); // Ξανανοίγει την αρχική σελίδα
+         new DriverHome(); 
          this.dispose();
     }//GEN-LAST:event_jButton5ActionPerformed
 
     private void jButton4ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton4ActionPerformed
-         new User(); // Ανοίγει νέο παράθυρο με το προφίλ
+         new User(); 
          this.dispose(); 
     }//GEN-LAST:event_jButton4ActionPerformed
 
@@ -349,7 +345,7 @@ public class DriverHome extends javax.swing.JFrame {
         return;
     }
     Route.EndofRoute(currentRideId);
-    // Εμφάνιση παραθύρου αξιολόγησης
+    
     String[] options = {"0", "1", "2", "3", "4", "5"};
     String ratingStr = (String) JOptionPane.showInputDialog(
         this,
