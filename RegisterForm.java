@@ -16,7 +16,7 @@ public class RegisterForm {
         JFrame frame = new JFrame("Register");
         frame.setSize(350, 300);
         frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
-         frame.setLocationRelativeTo(null); // Κέντρο οθόνης
+         frame.setLocationRelativeTo(null); 
         frame.setVisible(true);
         JPanel panel = new JPanel();
         frame.add(panel);
@@ -88,13 +88,13 @@ public class RegisterForm {
 
     private static boolean insertUser(String name, String email, String password, String pickMode) {
         String url = "jdbc:mysql://localhost:3306/pickmeapp?useSSL=false&serverTimezone=UTC";
-        String user = "root"; // change if needed
-        String pass = "password"; // change to your DB password
+        String user = "root"; 
+        String pass = "password"; /
 
         String sql = "INSERT INTO users(name, email, password, pickMode) VALUES (?, ?, ?, ?)";
 
         try {
-            Class.forName("com.mysql.cj.jdbc.Driver"); // Ensure driver is loaded
+            Class.forName("com.mysql.cj.jdbc.Driver"); 
             try (Connection conn = DriverManager.getConnection(url, user, pass);
                  PreparedStatement pstmt = conn.prepareStatement(sql)) {
 
