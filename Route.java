@@ -111,7 +111,7 @@ public class Route {
             try (PreparedStatement stmt = conn.prepareStatement(completeSql)) {
                 stmt.setInt(1, rideRequestId);
                 stmt.executeUpdate();
-                JOptionPane.showMessageDialog(null, "✅ Η διαδρομή ολοκληρώθηκε από όλους!");
+                JOptionPane.showMessageDialog(null, " Η διαδρομή ολοκληρώθηκε από όλους!");
             }
         } else {
             JOptionPane.showMessageDialog(null, "Η διαδρομή σημειώθηκε ως ολοκληρωμένη από εσάς.\nΑναμένεται και ο άλλος χρήστης.");
@@ -119,7 +119,7 @@ public class Route {
 
     } catch (SQLException ex) {
         ex.printStackTrace();
-        JOptionPane.showMessageDialog(null, "❌ Σφάλμα κατά την ενημέρωση της διαδρομής:\n" + ex.getMessage());
+        JOptionPane.showMessageDialog(null, " Σφάλμα κατά την ενημέρωση της διαδρομής:\n" + ex.getMessage());
     }
 }
 
@@ -199,7 +199,7 @@ public class Route {
             stmt.executeUpdate();
 
             JOptionPane.showMessageDialog(null,
-                "✅ Διαδρομή αποθηκεύτηκε:\nΑπό: " + startStr + "\nΠρος: " + endStr);
+                " Διαδρομή αποθηκεύτηκε:\nΑπό: " + startStr + "\nΠρος: " + endStr);
 
         } catch (SQLException e) {
             e.printStackTrace();
@@ -328,7 +328,7 @@ public static void weFoundDriver(int passengerId) {
             JOptionPane.showMessageDialog(null, message, "Βρέθηκε Οδηγός!", JOptionPane.INFORMATION_MESSAGE);
 
         } else {
-            JOptionPane.showMessageDialog(null, "❌ Δεν βρέθηκε επιβεβαιωμένος οδηγός ακόμα.");
+            JOptionPane.showMessageDialog(null, " Δεν βρέθηκε επιβεβαιωμένος οδηγός ακόμα.");
         }
 
     } catch (SQLException ex) {
@@ -369,12 +369,12 @@ public static void weFoundDriver(int passengerId) {
             String country = json.split("\"country_name\":\"")[1].split("\"")[0];
             return city + ", " + country;
         } else {
-            System.out.println("⚠️ Δεν βρέθηκαν τα πεδία city ή country_name.");
+            System.out.println(" Δεν βρέθηκαν τα πεδία city ή country_name.");
             return "Unknown";
         }
 
     } catch (Exception e) {
-        System.out.println("❌ Σφάλμα κατά το αίτημα στο IP API.");
+        System.out.println("Σφάλμα κατά το αίτημα στο IP API.");
         e.printStackTrace();
         return "Unknown";
     }
